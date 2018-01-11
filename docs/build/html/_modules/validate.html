@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>validate &mdash; EZ Checksum 0.2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="EZ Checksum 0.2.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">EZ Checksum 0.2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for validate</h1><div class="highlight"><pre>
+<span class="ch">#!/usr/bin/env python</span>
+
+<span class="sd">&quot;&quot;&quot;Validate module contains functions handling validation / verification.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Thread</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="c1">#import re</span>
+
+<span class="c1">#import dialogs</span>
+<span class="kn">import</span> <span class="nn">hash_profiles</span> <span class="kn">as</span> <span class="nn">Hp</span>
+
+
+<div class="viewcode-block" id="hash_from_line"><a class="viewcode-back" href="../validate.html#validate.hash_from_line">[docs]</a><span class="k">def</span> <span class="nf">hash_from_line</span><span class="p">(</span><span class="n">line</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Extract hash string from line of text.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">        tuple or None</span>
+<span class="sd">            Tuple in the form: (algorithm index, hash)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">profile</span> <span class="ow">in</span> <span class="n">Hp</span><span class="o">.</span><span class="n">HASH_TYPES</span><span class="p">:</span>
+        <span class="n">match</span> <span class="o">=</span> <span class="n">profile</span><span class="p">[</span><span class="s1">&#39;regex&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">())</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="bp">None</span></div>
+
+
+<div class="viewcode-block" id="set_validator"><a class="viewcode-back" href="../validate.html#validate.set_validator">[docs]</a><span class="k">def</span> <span class="nf">set_validator</span><span class="p">(</span><span class="n">parent</span><span class="p">,</span> <span class="n">text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set and disable the hashChoiceButton.</span>
+
+<span class="sd">        Does a very fast length check first</span>
+<span class="sd">  </span>
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">            True if valid verifcation string, else False.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="ow">in</span> <span class="n">Hp</span><span class="o">.</span><span class="n">HASH_LENGTHS</span><span class="p">:</span>
+        <span class="n">hash_tuple</span> <span class="o">=</span> <span class="n">hash_from_line</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hash_tuple</span><span class="p">:</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">hashChoiceButton</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="n">hash_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">hashChoiceButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="bp">False</span><span class="p">)</span>
+            <span class="c1">#parent.set_hash_algorithm(hash_tuple[0])</span>
+            <span class="c1"># Ensure that we have a clean hex string</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">hash_tuple</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">parent</span><span class="o">.</span><span class="n">has_validator</span> <span class="o">=</span> <span class="bp">True</span>
+            <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">hashChoiceButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="bp">True</span><span class="p">)</span>
+        <span class="n">parent</span><span class="o">.</span><span class="n">has_validator</span> <span class="o">=</span> <span class="bp">False</span></div>
+
+
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">EZ Checksum 0.2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2018, Steve Daulton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>

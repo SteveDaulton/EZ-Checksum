@@ -1,0 +1,468 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>ezchecksum &mdash; EZ Checksum 0.2.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="EZ Checksum 0.2.0 documentation" href="../index.html" />
+    <link rel="up" title="Module code" href="index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">EZ Checksum 0.2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for ezchecksum</h1><div class="highlight"><pre>
+<span class="ch">#!/usr/bin/env python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="sd">&quot;&quot;&quot;EZchecksum is a GUI application for calculating and testing checksums.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="kn">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
+
+<span class="kn">import</span> <span class="nn">gui</span>
+<span class="kn">import</span> <span class="nn">hash_profiles</span> <span class="kn">as</span> <span class="nn">Hp</span>
+<span class="kn">import</span> <span class="nn">prefs</span>
+<span class="kn">import</span> <span class="nn">dialogs</span>
+<span class="kn">import</span> <span class="nn">calc</span>
+<span class="kn">import</span> <span class="nn">validate</span>
+
+<span class="n">VERSION</span> <span class="o">=</span> <span class="s1">&#39;0.1.0&#39;</span>
+
+
+<div class="viewcode-block" id="ShaApp"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp">[docs]</a><span class="k">class</span> <span class="nc">ShaApp</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QMainWindow</span><span class="p">,</span> <span class="n">gui</span><span class="o">.</span><span class="n">Ui_MainWindow</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;GUI application for calculating and testing checksums.</span>
+
+<span class="sd">    Supported hash algorithms are defined in hash_profiles.</span>
+
+
+<span class="sd">    Algorithm:</span>
+
+<span class="sd">        The default algorithm is SHA-256. May also be overridden</span>
+<span class="sd">        if an optional validation string is set.</span>
+
+<span class="sd">    Validation String:</span>
+
+<span class="sd">        An optional test value (hex hash string) may be</span>
+<span class="sd">        entered. If provided the algorithm will be detected from the</span>
+<span class="sd">        length of the string.</span>
+
+<span class="sd">        If the validation string is a URL, the target will be downloaded</span>
+<span class="sd">        and searched for supported hash strings. The file will be tested</span>
+<span class="sd">        against each hash string found.</span>
+
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">        default_open_dir : string</span>
+<span class="sd">            Default directory for opening files or directories.</span>
+<span class="sd">        default_save_dir : string</span>
+<span class="sd">            Default directory for saving results.</span>
+<span class="sd">        hash_thread : QThread</span>
+<span class="sd">            Worker thread.</span>
+<span class="sd">        has_validator : bool</span>
+<span class="sd">            True when a validation hex checksum exists</span>
+<span class="sd">        algorithm : dict</span>
+<span class="sd">            Hash profile (see: :doc:`hash_profiles`)</span>
+<span class="sd">        data : QLineEdit</span>
+<span class="sd">            Data for worker thread. See: :py:mod:`calc.ChecksumThread`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ShaApp</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setupUi</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Initialise attributes to defaults</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_open_dir</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QDir</span><span class="o">.</span><span class="n">homePath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_save_dir</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QDir</span><span class="o">.</span><span class="n">homePath</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_validator</span> <span class="o">=</span> <span class="bp">False</span>  <span class="c1"># True when verification hash is valid.</span>
+
+        <span class="c1"># Settings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">Hp</span><span class="o">.</span><span class="n">HASH_CODES</span><span class="p">[</span><span class="s1">&#39;SHA256&#39;</span><span class="p">]</span>
+        <span class="c1"># Data is a QLineEdit</span>
+        <span class="c1">#  containing the file name(s) to be processed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="c1"># Update settings from saved config</span>
+        <span class="n">prefs</span><span class="o">.</span><span class="n">read_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="c1"># Add Drag and drop methods (some methods defined in gui.py)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">dragEnterEvent</span> <span class="o">=</span> <span class="n">file_drag_enter_event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">dragMoveEvent</span> <span class="o">=</span> <span class="n">file_drag_move_event</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">dropEvent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_line_drop_event</span>
+
+        <span class="c1"># Menu actions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionSelect_File</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_browser</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionSave_Result</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_result</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionQuit</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">quit</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">actionAbout</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">about</span><span class="p">)</span>
+
+        <span class="c1"># Button actions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileAddButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_browser</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">run_checksum</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cancelButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetButton</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reset_or_clear</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hashChoiceButton</span><span class="o">.</span><span class="n">currentIndexChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set_hash_algorithm</span><span class="p">)</span>
+
+        <span class="c1"># fileSelectLineEdit actions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">textChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file_input_text_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">textChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validator_changed</span><span class="p">)</span>
+
+
+    <span class="c1"># Process</span>
+<div class="viewcode-block" id="ShaApp.run_checksum"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.run_checksum">[docs]</a>    <span class="k">def</span> <span class="nf">run_checksum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Checksum calculation.&quot;&quot;&quot;</span>
+        <span class="c1"># Create a new thread with appropriate parameters</span>
+        <span class="c1">#self.algorithm = Hp.HASH_CODES[&#39;SHA256&#39;]  # This should already be set</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span>
+
+        <span class="c1">############################</span>
+        <span class="c1"># If validation string is a valid hash, set the algorithm for hash_thread to match.</span>
+        <span class="n">verify_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="n">validate</span><span class="o">.</span><span class="n">set_validator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">verify_text</span><span class="p">)</span>
+        <span class="c1">############################</span>
+        <span class="c1"># Now create thread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span> <span class="o">=</span> <span class="n">calc</span><span class="o">.</span><span class="n">ChecksumThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="c1"># Connect self.hash_thread object&#39;s SIGNAL &quot;checksum&quot; to the method &#39;add_result()&#39;.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span><span class="p">,</span>
+            <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s2">&quot;checksum(QString, QString)&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_result</span><span class="p">)</span>
+        <span class="c1"># Connect SIGNAL updateProgressBar to fileProgressBar</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span><span class="p">,</span>
+            <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s2">&quot;updateProgressBar(int)&quot;</span><span class="p">),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">progressBar</span><span class="o">.</span><span class="n">setValue</span><span class="p">)</span>
+        <span class="c1"># and start the thread.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span></div>
+
+
+    <span class="c1"># Close event</span>
+<div class="viewcode-block" id="ShaApp.closeEvent"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.closeEvent">[docs]</a>    <span class="k">def</span> <span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Override window close requests.&quot;&quot;&quot;</span>
+        <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">ignore</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quit</span><span class="p">()</span></div>
+
+
+    <span class="c1"># Update controls and settings</span>
+<div class="viewcode-block" id="ShaApp.update_gui"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.update_gui">[docs]</a>    <span class="k">def</span> <span class="nf">update_gui</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Update buttons and menus.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Get current states</span>
+        <span class="n">has_input</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">has_output</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">toPlainText</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="n">has_verify</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span>
+
+        <span class="c1"># Is ChecksumThread running?</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">hash_thread_running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span><span class="o">.</span><span class="n">isRunning</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>  <span class="c1"># hash_thread may not have been created yet.</span>
+            <span class="n">hash_thread_running</span> <span class="o">=</span> <span class="bp">False</span>
+        <span class="n">hash_thread_idle</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">hash_thread_running</span>
+
+        <span class="c1"># Set states (most parts of gui are disabled during processing)</span>
+        <span class="c1"># Note: goButton is handled by file_input_text_changed</span>
+
+        <span class="c1"># Enabled when hash_thread_idle</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">hash_thread_idle</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">hash_thread_idle</span><span class="p">)</span>
+        <span class="c1"># Enabled when hash_thread_idle and something to clear.</span>
+        <span class="n">can_clear</span> <span class="o">=</span> <span class="n">has_input</span> <span class="ow">or</span> <span class="n">has_output</span> <span class="ow">or</span> <span class="n">has_verify</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resetButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">can_clear</span> <span class="ow">and</span> <span class="n">hash_thread_idle</span><span class="p">)</span>
+        <span class="c1"># Enabled when hash_thread_running</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cancelButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">hash_thread_running</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">hashChoiceButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">hash_thread_idle</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_validator</span><span class="p">)</span></div>
+
+    <span class="c1"># Write to Output</span>
+<div class="viewcode-block" id="ShaApp.add_result"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.add_result">[docs]</a>    <span class="k">def</span> <span class="nf">add_result</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">checksum</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handle checksum results.&quot;&quot;&quot;</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="s1">&#39;File name: &#39;</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">+</span>\
+              <span class="n">Hp</span><span class="o">.</span><span class="n">HASH_TYPES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span>\
+              <span class="s1">&#39; checksum: &#39;</span> <span class="o">+</span> <span class="n">checksum</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">txt</span><span class="p">)</span>
+
+        <span class="c1">##############</span>
+        <span class="c1"># Validate</span>
+        <span class="c1"># Compare &#39;checksum&#39; with the expected value(s) from</span>
+        <span class="c1"># validation thread.</span>
+        <span class="c1"># self.val_thread.join()  # block until we have the validator.</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_validator</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">checksum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s1">&#39;&lt;font color=&quot;#009900&quot;&gt;&lt;b&gt;Success. Checksum matches the expected value.&#39;</span>
+                <span class="s1">&#39;&lt;/b&gt;&lt;/font&gt;&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s1">&#39;&lt;font color=&quot;red&quot;&gt;&lt;b&gt;Fail. Checksum does not match expected value.&#39;</span>
+                <span class="s1">&#39;&lt;/b&gt;&lt;/font&gt;&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="s1">&#39;&lt;b&gt;Warning. The </span><span class="se">\&#39;</span><span class="s1">Validation</span><span class="se">\&#39;</span><span class="s1"> text is not &#39;</span>
+                <span class="s1">&#39;a recognised checksum.&lt;/b&gt;&#39;</span><span class="p">)</span>
+        
+        <span class="c1">##############</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span></div>
+
+
+    <span class="c1">###############</span>
+    <span class="c1"># Event handlers:</span>
+    <span class="c1">###############</span>
+
+    <span class="c1"># Menu Handlers:</span>
+    <span class="c1">################</span>
+
+    <span class="c1"># Menu: File &gt; Save Result.</span>
+<div class="viewcode-block" id="ShaApp.save_result"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.save_result">[docs]</a>    <span class="k">def</span> <span class="nf">save_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Save results to file&quot;&quot;&quot;</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">toPlainText</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+            <span class="n">dialogs</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span>
+                <span class="s1">&#39;No results to print.</span><span class="se">\n</span><span class="s1">Calculate checksum first.&#39;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">dialogs</span><span class="o">.</span><span class="n">save_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span></div>
+
+    <span class="c1"># Menu: File &gt; Quit</span>
+<div class="viewcode-block" id="ShaApp.quit"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.quit">[docs]</a>    <span class="k">def</span> <span class="nf">quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shutdown application.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">dialogs</span><span class="o">.</span><span class="n">dialog</span><span class="p">(</span><span class="s1">&#39;Close EZ Checksum?&#39;</span><span class="p">,</span> <span class="n">choice</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+            <span class="n">prefs</span><span class="o">.</span><span class="n">write_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></div>
+
+    <span class="c1"># Menu: Help &gt; About</span>
+<div class="viewcode-block" id="ShaApp.about"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.about">[docs]</a>    <span class="k">def</span> <span class="nf">about</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Show :py:mod:`&#39;About&#39; &lt;dialogs.about&gt;` dialog&quot;&quot;&quot;</span>
+        <span class="n">dialogs</span><span class="o">.</span><span class="n">about</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">VERSION</span><span class="p">)</span></div>
+
+
+    <span class="c1"># Drag and drop handlers:</span>
+    <span class="c1">#######################</span>
+
+<div class="viewcode-block" id="ShaApp.file_line_drop_event"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.file_line_drop_event">[docs]</a>    <span class="k">def</span> <span class="nf">file_line_drop_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handle fileSelectLineEdit drop events&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">hasText</span><span class="p">():</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">setDropAction</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CopyAction</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+        <span class="k">elif</span> <span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">hasUrls</span><span class="p">:</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">setDropAction</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CopyAction</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="n">file_</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">urls</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">toLocalFile</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">file_</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">file_</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ShaApp.file_list_drop_event"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.file_list_drop_event">[docs]</a>    <span class="k">def</span> <span class="nf">file_list_drop_event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handle fileSelectQListWidget drop events&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">hasUrls</span><span class="p">:</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">setDropAction</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CopyAction</span><span class="p">)</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">urls</span><span class="p">():</span>
+                <span class="n">path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">toLocalFile</span><span class="p">())</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">islink</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                        <span class="n">item</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QListWidgetItem</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectQListWidget</span><span class="o">.</span><span class="n">addItem</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+                        <span class="n">add_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Can this happen?</span>
+                        <span class="n">dialogs</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Unsupported URL&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">event</span><span class="o">.</span><span class="n">ignore</span><span class="p">()</span></div>
+
+
+    <span class="c1"># Line Edit handlers</span>
+<div class="viewcode-block" id="ShaApp.file_input_text_changed"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.file_input_text_changed">[docs]</a>    <span class="k">def</span> <span class="nf">file_input_text_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;QLineEdit handler for typed input.</span>
+
+<span class="sd">        Sets goButton state: Enabled when file input string is a valid file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">is_valid_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">goButton</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="n">is_valid_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">is_valid_file</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goButton</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="s1">&#39;Click to start processing&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goButton</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">&#39;File selected&#39;</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goButton</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="s1">&#39;Select file first&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">goButton</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">&#39;No file selected&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ShaApp.validator_changed"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.validator_changed">[docs]</a>    <span class="k">def</span> <span class="nf">validator_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;QLineEdit handler for typed validator.</span>
+<span class="sd">    </span>
+<span class="sd">            Update GUI if resetButton state may need changing, if either:</span>
+
+<span class="sd">            a. resetButton was enabled and validateLineEdit is now empty,</span>
+<span class="sd">            b. resetButton was disabled and validateLineEdit is not now empty.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set_validator bails very quickly if wrong number of characters</span>
+        <span class="n">validate</span><span class="o">.</span><span class="n">set_validator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resetButton</span><span class="o">.</span><span class="n">isEnabled</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">text</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span></div>
+
+
+    <span class="c1"># Button handlers</span>
+    <span class="c1">################</span>
+
+    <span class="c1"># Button: Add File</span>
+<div class="viewcode-block" id="ShaApp.file_browser"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.file_browser">[docs]</a>    <span class="k">def</span> <span class="nf">file_browser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Qt File browser for single file.&quot;&quot;&quot;</span>
+        <span class="n">fname</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getOpenFileName</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;Select File&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_open_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">fname</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_open_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">fname</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span></div>
+
+    <span class="c1"># Button: Stop</span>
+<div class="viewcode-block" id="ShaApp.stop"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Stop ChecksumThread.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hash_thread</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span></div>
+
+    <span class="c1"># Choice Button: Algorithm</span>
+<div class="viewcode-block" id="ShaApp.set_hash_algorithm"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.set_hash_algorithm">[docs]</a>    <span class="k">def</span> <span class="nf">set_hash_algorithm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">choice</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;hash algorithm setter.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span> <span class="o">=</span> <span class="n">choice</span>
+        <span class="n">alg_name</span> <span class="o">=</span> <span class="n">Hp</span><span class="o">.</span><span class="n">HASH_TYPES</span><span class="p">[</span><span class="n">choice</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hashChoiceButton</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s2">&quot;Current algorithm: &quot;</span> <span class="o">+</span> <span class="n">alg_name</span><span class="p">)</span></div>
+
+
+    <span class="c1"># Button: Reset / Clear</span>
+<div class="viewcode-block" id="ShaApp.reset_or_clear"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.ShaApp.reset_or_clear">[docs]</a>    <span class="k">def</span> <span class="nf">reset_or_clear</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reset GUI.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fileSelectLineEdit</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">validateLineEdit</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">resultTextBrowser</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_gui</span><span class="p">()</span></div></div>
+
+
+
+<div class="viewcode-block" id="number_of_files"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.number_of_files">[docs]</a><span class="k">def</span> <span class="nf">number_of_files</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the number of files in a directory</span>
+<span class="sd">    including subdirectories.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">path</span><span class="p">)])</span></div>
+
+<div class="viewcode-block" id="file_drag_enter_event"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.file_drag_enter_event">[docs]</a><span class="k">def</span> <span class="nf">file_drag_enter_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Accept drag enter event if hasUrls&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">hasUrls</span><span class="p">:</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">ignore</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="file_drag_move_event"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.file_drag_move_event">[docs]</a><span class="k">def</span> <span class="nf">file_drag_move_event</span><span class="p">(</span><span class="n">event</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Accept move event if hasUrls&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">event</span><span class="o">.</span><span class="n">mimeData</span><span class="p">()</span><span class="o">.</span><span class="n">hasUrls</span><span class="p">:</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">setDropAction</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">CopyAction</span><span class="p">)</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">event</span><span class="o">.</span><span class="n">ignore</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../ezchecksum.html#ezchecksum.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Create window&quot;&quot;&quot;</span>
+    <span class="n">app</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QApplication</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span>
+    <span class="n">window</span> <span class="o">=</span> <span class="n">ShaApp</span><span class="p">()</span>
+    <span class="n">window</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="n">app</span><span class="o">.</span><span class="n">exec_</span><span class="p">())</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">EZ Checksum 0.2.0 documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2018, Steve Daulton.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.6.
+    </div>
+  </body>
+</html>
