@@ -8,7 +8,7 @@
     <x>0</x>
     <y>0</y>
     <width>421</width>
-    <height>522</height>
+    <height>545</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,6 +16,22 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <spacer name="verticalSpacer_4">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeType">
+       <enum>QSizePolicy::Minimum</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>400</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
     <item>
      <layout class="QVBoxLayout" name="verticalLayout_1">
       <item>

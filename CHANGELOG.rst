@@ -1,7 +1,12 @@
 This document lists significant changes and bug fixes in EZ Checksum Lite.
 
+0.2.2 - Jan 2018
+-----------------
+* Github repository created '<https://github.com/SteveDaulton/EZ-Checksum>'_.
+* :doc:`license` files added.
+
 0.2.1 - Jan 2018
----------------
+----------------
 * Documentation update.
 
 0.2.0 - Jan 2018

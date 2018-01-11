@@ -27,3 +27,4 @@ Changelog
    :maxdepth: 2
 
    changelog
+   license

@@ -26,6 +26,7 @@
 *.log
 *.sql
 *.sqlite
+*.spec
 
 # OS generated files #
 ######################
@@ -39,4 +40,6 @@ Thumbs.db
 
 # Directories #
 ###############
+build/
+dist/
 docs/build/
