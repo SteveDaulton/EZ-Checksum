@@ -12,7 +12,7 @@ Typical uses include:
 
 Interface
 ---------
-The interface is designed to be as simple as possible, providing ameans to generate a checksum for a single file, and to verify the checksum against a known value.
+The interface is designed to be as simple as possible, providing a means to generate a checksum for a single file, and to verify the checksum against a known value.
 
 Common usability features such as drag and drop, tool tips and keyboard shortcuts are provided, along with a comprehensive user manual.
 
