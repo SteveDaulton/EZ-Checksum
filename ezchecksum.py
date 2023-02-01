@@ -290,12 +290,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.update_gui()
 
 
-def number_of_files(path):
-    """Return the number of files in a directory
-    including subdirectories."""
-    return sum((len(files) for _, _, files in os.walk(path)))
-
-
 def file_drag_enter_event(event):
     """Accept drag enter event if hasUrls"""
     if event.mimeData().hasUrls:
