@@ -156,10 +156,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     # Write to Output
     def add_result(self, name, checksum):
         """Handle checksum results."""
-        txt = 'File name: ' + name + '\n' +\
-              Hp.HASH_TYPES[self.algorithm]['name'] +\
-              ' checksum: ' + checksum + '\n'
-
+        alg_name = Hp.HASH_TYPES[self.algorithm]['name']
+        txt = f'File name: {name}\n{alg_name} checksum: {checksum}\n'
         self.resultTextBrowser.append(txt)
 
         if self.has_validator:
@@ -282,7 +280,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         """hash algorithm setter."""
         self.algorithm = choice
         alg_name = Hp.HASH_TYPES[choice]['name']
-        self.hashChoiceButton.setStatusTip("Current algorithm: " + alg_name)
+        self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}')
 
     def reset_or_clear(self):
         """Reset GUI."""
