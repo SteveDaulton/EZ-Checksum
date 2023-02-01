@@ -1,0 +1,8 @@
+[BASIC]
+# Allow most short variable names.
+# This is not an excuse. Descriptive names should always be used
+# unless the name is abundently clear with a short name.
+good-names-rgxs=^[_a-z][_a-z0-9]?$
+
+[MASTER]
+extension-pkg-whitelist=PyQt6

@@ -284,7 +284,7 @@
         <property name="toolTip">
          <string>Output window</string>
         </property>
-        <property name="tabStopWidth">
+        <property name="tabStopWidth" stdset="0">
          <number>80</number>
         </property>
        </widget>
@@ -422,7 +422,7 @@ if optional 'Validation' text set</string>
      <x>0</x>
      <y>0</y>
      <width>421</width>
-     <height>27</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

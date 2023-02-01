@@ -2,12 +2,6 @@
 
 """Validate module contains functions handling validation / verification."""
 
-import sys
-from threading import Thread
-import time
-#import re
-
-#import dialogs
 import hash_profiles as Hp
 
 
@@ -30,13 +24,13 @@ def hash_from_line(line):
 
 def set_validator(parent, text):
     """Set and disable the hashChoiceButton.
-
         Does a very fast length check first
-  
+
         Return
         ------
             True if valid verifcation string, else False.
     """
+
     if len(text) in Hp.HASH_LENGTHS:
         hash_tuple = hash_from_line(text)
         if hash_tuple:
@@ -50,6 +44,3 @@ def set_validator(parent, text):
     else:
         parent.hashChoiceButton.setEnabled(True)
         parent.has_validator = False
-
-
-
