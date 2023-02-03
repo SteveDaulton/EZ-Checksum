@@ -7,8 +7,7 @@ import os
 import sys
 
 from PyQt6.QtCore import QDir, pyqtSignal, Qt
-from PyQt6.QtWidgets import (QMainWindow, QApplication,
-                             QFileDialog, QListWidgetItem)
+from PyQt6.QtWidgets import QMainWindow, QApplication, QFileDialog
 
 import gui
 import hash_profiles as Hp
@@ -80,9 +79,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         # Update settings from saved config
         prefs.read_settings(self)
 
-        # Add Drag and drop methods (some methods defined in gui.py)
+        # Add Drag and drop methods
         self.fileSelectLineEdit.dragEnterEvent = file_drag_enter_event
-        self.fileSelectLineEdit.dragMoveEvent = file_drag_move_event
         self.fileSelectLineEdit.dropEvent = self.file_line_drop_event
 
         # Menu actions
@@ -199,31 +197,21 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def file_line_drop_event(self, event):
         """Handle fileSelectLineEdit drop events"""
-        if event.mimeData().hasText():
+        etype = event.mimeData()
+        if etype.hasText() and len(etype.text()) > 1:
             event.setDropAction(Qt.DropAction.CopyAction)
             event.accept()
-            self.fileSelectLineEdit.setText(event.mimeData().text())
-        elif event.mimeData().hasUrls:
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.accept()
-            file_ = str(event.mimeData().urls()[0].toLocalFile())
-            if os.path.isfile(file_):
+            self.fileSelectLineEdit.setText(etype.text())
+        elif etype.hasUrls:
+            if len(etype.urls()) == 1:
+                event.setDropAction(Qt.DropAction.CopyAction)
+                file_ = str(etype.urls()[0].toLocalFile())
                 self.fileSelectLineEdit.setText(file_)
-
-    def file_list_drop_event(self, event):
-        """Handle fileSelectQListWidget drop events"""
-        if event.mimeData().hasUrls:
-            event.setDropAction(Qt.DropAction.CopyAction)
-            event.accept()
-            for url in event.mimeData().urls():
-                path = str(url.toLocalFile())
-                if not os.path.islink(path):
-                    if os.path.isfile(path):
-                        item = QListWidgetItem(path)
-                        self.fileSelectQListWidget.addItem(item)
-                    else:
-                        # Can this happen?
-                        dialogs.warning(self, 'Unsupported URL')
+                event.accept()
+            elif len(etype.urls()) > 1:
+                dialogs.warning(self, 'Too many files dropped.')
+            else:
+                dialogs.warning(self, 'Invalid file.')
         else:
             event.ignore()
 
@@ -237,6 +225,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         if is_valid_file:
             self.goButton.setToolTip('Click to start processing')
             self.goButton.setStatusTip('File selected')
+            self.fileSelectLineEdit.setStatusTip('')
 
         else:
             self.goButton.setToolTip('Select file first')
@@ -285,6 +274,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def reset_or_clear(self):
         """Reset GUI."""
         self.fileSelectLineEdit.clear()
+        self.fileSelectLineEdit.setStatusTip('No file selected')
         self.validateLineEdit.clear()
         self.resultTextBrowser.clear()
         self.update_gui()
@@ -292,14 +282,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
 def file_drag_enter_event(event):
     """Accept drag enter event if hasUrls"""
-    if event.mimeData().hasUrls:
-        event.accept()
-    else:
-        event.ignore()
-
-
-def file_drag_move_event(event):
-    """Accept move event if hasUrls"""
     if event.mimeData().hasUrls:
         event.setDropAction(Qt.DropAction.CopyAction)
         event.accept()
