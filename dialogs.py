@@ -49,23 +49,6 @@ def dialog(message, title='Warning', more='', details='', choice=False):
     return msg_box.exec() == QMessageBox.StandardButton.Ok
 
 
-def modeless_dialog(parent, message, title='Warning', more='', details=''):
-    """A simple non-modal message box"""
-    msg_box = QMessageBox(parent)
-    msg_box.setIcon(QMessageBox.Warning)
-    msg_box.setWindowTitle(title)
-    msg_box.setText(message)
-    if more:
-        msg_box.setInformativeText(more)
-    if details:
-        msg_box.setDetailedText(details)
-    msg_box.setStandardButtons(QMessageBox.Ok)
-    # In modeless QMessageBox, setEscapeButton must
-    # be set after setStandardButtons
-    msg_box.setEscapeButton(QMessageBox.Ok)
-    msg_box.show()
-
-
 def save_results(parent, text):
     """Save results to file dialog"""
     dlog = QFileDialog()
