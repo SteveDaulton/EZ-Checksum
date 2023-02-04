@@ -8,6 +8,7 @@ import sys
 
 from PyQt6.QtCore import QDir, pyqtSignal, Qt
 from PyQt6.QtWidgets import QMainWindow, QApplication, QFileDialog
+from PyQt6.QtGui import QIcon
 
 import gui
 import hash_profiles as Hp
@@ -63,6 +64,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setupUi(self)
+        self.setWindowIcon(QIcon('icon.png'))
 
         # Initialise attributes to defaults
         self.default_open_dir = QDir.homePath()
