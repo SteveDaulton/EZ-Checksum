@@ -72,8 +72,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
         # Settings
         self.algorithm = Hp.HASH_CODES['SHA256']
-        # Data is a QLineEdit
-        #  containing the file name(s) to be processed.
         self.data = None
 
         # Update settings from saved config
@@ -88,11 +86,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.actionSave_Result.triggered.connect(self.save_result)
         self.actionQuit.triggered.connect(self.quit)
         self.actionAbout.triggered.connect(self.about)
+        self.actionAbout_Qt.triggered.connect(QApplication.aboutQt)
 
         # Button actions
         self.fileAddButton.clicked.connect(self.file_browser)
         self.goButton.clicked.connect(self.run_checksum)
         self.cancelButton.clicked.connect(self.stop)
+        self.closeButton.clicked.connect(self.quit)
         self.resetButton.clicked.connect(self.reset_or_clear)
         self.hashChoiceButton.currentIndexChanged.connect(
                 self.set_hash_algorithm
@@ -187,9 +187,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def quit(self):
         """Shutdown application."""
-        if dialogs.dialog('Close EZ Checksum?', choice=True):
-            prefs.write_settings(self)
-            sys.exit()
+        prefs.write_settings(self)
+        sys.exit()
 
     def about(self):
         """Show :py:mod:`'About' <dialogs.about>` dialog"""

@@ -410,6 +410,16 @@ if optional 'Validation' text set</string>
           </property>
          </widget>
         </item>
+        <item>
+         <widget class="QPushButton" name="closeButton">
+          <property name="toolTip">
+           <string>Quit EZ Checksum</string>
+          </property>
+          <property name="text">
+           <string>Close</string>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -441,6 +451,7 @@ if optional 'Validation' text set</string>
     <addaction name="actionUser_Manual"/>
     <addaction name="separator"/>
     <addaction name="actionAbout"/>
+    <addaction name="actionAbout_Qt"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuHelp"/>
@@ -463,12 +474,17 @@ if optional 'Validation' text set</string>
   </action>
   <action name="actionAbout">
    <property name="text">
-    <string>About...</string>
+    <string>About EZ Checksum...</string>
    </property>
   </action>
   <action name="actionQuit">
    <property name="text">
     <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionAbout_Qt">
+   <property name="text">
+    <string>About Qt...</string>
    </property>
   </action>
  </widget>
