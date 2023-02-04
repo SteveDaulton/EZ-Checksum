@@ -82,6 +82,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         # Add Drag and drop methods
         self.fileSelectLineEdit.dragEnterEvent = file_drag_enter_event
         self.fileSelectLineEdit.dropEvent = self.file_line_drop_event
+        self.validateLineEdit.dragEnterEvent = line_validate_enter_event
+        self.validateLineEdit.dropEvent = self.line_validate_drop_event
 
         # Menu actions
         self.actionSelect_File.triggered.connect(self.file_browser)
@@ -216,6 +218,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         else:
             event.ignore()
 
+    def line_validate_drop_event(self, event):
+        """Handle drop event for validateLineEdit."""
+        etype = event.mimeData()
+        if etype.hasText() and len(etype.text()) > 1:
+            event.setDropAction(Qt.DropAction.CopyAction)
+            event.accept()
+            self.validateLineEdit.setText(etype.text())
+        else:
+            event.ignore()
+
     def file_input_text_changed(self):
         """QLineEdit handler for typed input.
 
@@ -284,6 +296,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 def file_drag_enter_event(event):
     """Accept drag enter event if hasUrls"""
     if event.mimeData().hasUrls:
+        event.setDropAction(Qt.DropAction.CopyAction)
+        event.accept()
+    else:
+        event.ignore()
+
+
+def line_validate_enter_event(event):
+    """Accept drag enter event if text"""
+    etype = event.mimeData()
+    if etype.hasText() and len(etype.text()) > 1:
         event.setDropAction(Qt.DropAction.CopyAction)
         event.accept()
     else:
