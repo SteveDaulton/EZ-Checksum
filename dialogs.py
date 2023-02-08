@@ -52,13 +52,13 @@ def dialog(message, title='Warning', more='', details='', choice=False):
 def save_results(parent, text):
     """Save results to file dialog"""
     dlog = QFileDialog()
-    dlog.setAcceptMode(QFileDialog.AcceptSave)
-    dlog.setFilter('Text Files (*.txt);;Log Files (*.log);;All Files (*)')
-    dlog.setFileMode(QFileDialog.AnyFile)
+    dlog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)
+    dlog.setNameFilter('Text Files (*.txt);;Log Files (*.log);;All Files (*)')
+    dlog.setFileMode(QFileDialog.FileMode.AnyFile)
     dlog.setDefaultSuffix('txt')
     dlog.setDirectory(parent.default_save_dir)
     # Check user didn't cancel
-    if dlog.exec() == QDialog.Accepted:
+    if dlog.exec() == QDialog.DialogCode.Accepted:
         parent.default_save_dir = dlog.directory().path()
         # Ensure '.log' suffix if Log File filter selected
         # and no filter provided.

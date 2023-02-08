@@ -7,8 +7,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>421</width>
-    <height>545</height>
+    <width>436</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,23 +17,7 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <spacer name="verticalSpacer_4">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Minimum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>400</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_1">
+     <layout class="QVBoxLayout" name="verticalLayout_input">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_1">
         <item>
@@ -87,7 +71,7 @@
          <string notr="true">File may be dropped here</string>
         </property>
         <property name="statusTip">
-         <string>No file selected</string>
+         <string>No file selected.</string>
         </property>
         <property name="placeholderText">
          <string>File to test</string>
@@ -97,23 +81,7 @@
      </layout>
     </item>
     <item>
-     <spacer name="verticalSpacer_1">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Minimum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>400</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
-    </item>
-    <item>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <layout class="QVBoxLayout" name="verticalLayout_validate">
       <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
@@ -161,7 +129,7 @@
 (Right click or 'Ctrl + V' to paste)</string>
         </property>
         <property name="statusTip">
-         <string>No validation text entered</string>
+         <string>No validation text entered.</string>
         </property>
         <property name="text">
          <string/>
@@ -174,27 +142,70 @@
      </layout>
     </item>
     <item>
-     <spacer name="verticalSpacer_2">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
-      </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Minimum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>400</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
+     <layout class="QVBoxLayout" name="verticalLayout_output">
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QLabel" name="label_7">
+          <property name="text">
+           <string>3)</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_8">
+          <property name="text">
+           <string>Output file.</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+        <item>
+         <widget class="QPushButton" name="outputFileButton">
+          <property name="toolTip">
+           <string>Select output file</string>
+          </property>
+          <property name="text">
+           <string>Save To</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="outputLineEdit">
+        <property name="toolTip">
+         <string>File that the result will be written to.
+(Right click or 'Ctrl + V' to paste)</string>
+        </property>
+        <property name="statusTip">
+         <string>No output file selected. Output will not be saved.</string>
+        </property>
+        <property name="placeholderText">
+         <string>Output file (Optional)</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
       <item>
        <widget class="QLabel" name="label_5">
         <property name="text">
-         <string>3)</string>
+         <string>4)</string>
         </property>
         <property name="alignment">
          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -233,7 +244,7 @@
          <string>Select file first</string>
         </property>
         <property name="statusTip">
-         <string>No file selected</string>
+         <string>No file selected.</string>
         </property>
         <property name="text">
          <string>Start</string>
@@ -243,25 +254,16 @@
      </layout>
     </item>
     <item>
-     <spacer name="verticalSpacer_3">
+     <widget class="Line" name="line">
       <property name="orientation">
-       <enum>Qt::Vertical</enum>
+       <enum>Qt::Horizontal</enum>
       </property>
-      <property name="sizeType">
-       <enum>QSizePolicy::Minimum</enum>
-      </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>400</width>
-        <height>20</height>
-       </size>
-      </property>
-     </spacer>
+     </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_results">
       <item>
-       <widget class="QLabel" name="label_7">
+       <widget class="QLabel" name="label_9">
         <property name="text">
          <string>Test results below:</string>
         </property>
@@ -431,7 +433,7 @@ if optional 'Validation' text set</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>421</width>
+     <width>436</width>
      <height>19</height>
     </rect>
    </property>

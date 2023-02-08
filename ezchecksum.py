@@ -66,7 +66,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.setupUi(self)
         self.setWindowIcon(QIcon('icon.png'))
 
-        # Initialise attributes to defaults
         self.default_open_dir = QDir.homePath()
         self.default_save_dir = QDir.homePath()
         self.hash_thread = None
@@ -79,7 +78,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         # Update settings from saved config
         prefs.read_settings(self)
 
-        # Add Drag and drop methods
+        # Drag and drop methods
         self.fileSelectLineEdit.dragEnterEvent = file_drag_enter_event
         self.fileSelectLineEdit.dropEvent = self.file_line_drop_event
         self.validateLineEdit.dragEnterEvent = line_validate_enter_event
@@ -110,7 +109,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def run_checksum(self):
         """Checksum calculation."""
-        # Create a new thread with appropriate parameters
+        # Checksum processing in separate thread.
         self.data = self.fileSelectLineEdit
         verify_text = self.validateLineEdit.text()
         validate.set_validator(self, verify_text)
@@ -119,8 +118,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.hash_thread = calc.ChecksumThread(self.algorithm, self.data)
         self.hash_thread.checksum.connect(self.add_result)
         self.hash_thread.updateProgressBar.connect(self.progressBar.setValue)
-
-        # and start the thread.
         self.hash_thread.start()
         self.update_gui()
 
@@ -236,13 +233,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         is_valid_file = os.path.isfile(self.fileSelectLineEdit.text())
         self.goButton.setEnabled(is_valid_file)
         if is_valid_file:
-            self.goButton.setToolTip('Click to start processing')
-            self.goButton.setStatusTip('File selected')
+            self.goButton.setToolTip('Click to start processing.')
+            self.goButton.setStatusTip('File selected.')
             self.fileSelectLineEdit.setStatusTip('')
 
         else:
             self.goButton.setToolTip('Select file first')
-            self.goButton.setStatusTip('No file selected')
+            self.goButton.setStatusTip('No file selected.')
         self.update_gui()
 
     def validator_changed(self):
@@ -282,12 +279,12 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         """hash algorithm setter."""
         self.algorithm = choice
         alg_name = Hp.HASH_TYPES[choice]['name']
-        self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}')
+        self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}.')
 
     def reset_or_clear(self):
         """Reset GUI."""
         self.fileSelectLineEdit.clear()
-        self.fileSelectLineEdit.setStatusTip('No file selected')
+        self.fileSelectLineEdit.setStatusTip('No file selected.')
         self.validateLineEdit.clear()
         self.resultTextBrowser.clear()
         self.update_gui()
