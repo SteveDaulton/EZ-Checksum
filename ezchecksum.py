@@ -6,6 +6,8 @@
 import os
 import sys
 
+from pathlib import PurePath
+
 from PyQt6.QtCore import QDir, pyqtSignal, Qt
 from PyQt6.QtWidgets import QMainWindow, QApplication, QFileDialog
 from PyQt6.QtGui import QIcon
@@ -93,6 +95,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
         # Button actions
         self.fileAddButton.clicked.connect(self.file_browser)
+        self.outputFileButton.clicked.connect(self.set_outpath)
         self.goButton.clicked.connect(self.run_checksum)
         self.cancelButton.clicked.connect(self.stop)
         self.closeButton.clicked.connect(self.quit)
@@ -116,7 +119,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
         # Now create thread
         self.hash_thread = calc.ChecksumThread(self.algorithm, self.data)
-        self.hash_thread.checksum.connect(self.add_result)
+        self.hash_thread.checksum.connect(self.handle_result)
         self.hash_thread.updateProgressBar.connect(self.progressBar.setValue)
         self.hash_thread.start()
         self.update_gui()
@@ -153,7 +156,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                 )
 
     # Write to Output
-    def add_result(self, name, checksum):
+    def handle_result(self, name, checksum):
         """Handle checksum results."""
         alg_name = Hp.HASH_TYPES[self.algorithm]['name']
         txt = f'File name: {name}\n{alg_name} checksum: {checksum}\n'
@@ -173,6 +176,14 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             self.resultTextBrowser.append(
                 '<b>Warning. The \'Validation\' text is not '
                 'a recognised checksum.</b>')
+        if len(self.outputLineEdit.text()) > 0:
+            output = self.outputLineEdit.text()
+            fname = PurePath(name).name  # Name of the processed file
+            with open(output, 'wt', encoding='utf8') as fp:
+                fp.write(f'{checksum} {fname}')
+                self.resultTextBrowser.append(
+                    f'Result written to {output}')
+                print(f'written to {output}')
         self.update_gui()
 
     def save_result(self):
@@ -266,6 +277,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         if fname[0]:
             self.default_open_dir = os.path.dirname(str(fname[0]))
             self.fileSelectLineEdit.setText(fname[0])
+
+    def set_outpath(self):
+        """Set the checksum output file path."""
+        fname, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save",
+            self.default_save_dir,
+            ('Checksum Files (*.md5 *.sha1 *.sha224 *.sha256 *.384 '
+             '*.sha512 *.sha);;Text Files (*.txt);;All Files (*)'))
+        self.outputLineEdit.setText(fname)
 
     # Button: Stop
     def stop(self):
