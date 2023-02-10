@@ -68,7 +68,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.setupUi(self)
         self.setWindowIcon(QIcon('icon.png'))
 
-        self.default_open_dir = QDir.homePath()
+        self.default_open_dir: str = QDir.homePath()
         self.default_save_dir = QDir.homePath()
         self.hash_thread = None
         self.has_validator = False  # True when verification hash is valid.
@@ -179,11 +179,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         if len(self.outputLineEdit.text()) > 0:
             output = self.outputLineEdit.text()
             fname = PurePath(name).name  # Name of the processed file
-            with open(output, 'wt', encoding='utf8') as fp:
-                fp.write(f'{checksum} {fname}')
+            try:
+                with open(output, 'wt', encoding='utf8') as fp:
+                    fp.write(f'{checksum} {fname}')
+                    self.resultTextBrowser.append(
+                        f'Result written to {output}')
+                    print(f'written to {output}')
+            except FileNotFoundError:
                 self.resultTextBrowser.append(
-                    f'Result written to {output}')
-                print(f'written to {output}')
+                    f'<font color="red">{output} '
+                    'is not writeable.</font>')
         self.update_gui()
 
     def save_result(self):
