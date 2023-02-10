@@ -184,7 +184,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                     fp.write(f'{checksum} {fname}')
                     self.resultTextBrowser.append(
                         f'Result written to {output}')
-                    print(f'written to {output}')
             except FileNotFoundError:
                 self.resultTextBrowser.append(
                     f'<font color="red">{output} '
