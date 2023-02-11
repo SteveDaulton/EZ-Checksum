@@ -58,11 +58,13 @@ XXH64 = {
     'regex': re.compile(r'\b[a-f0-9]{16,16}\b', re.I)
     }
 
-# A list of dicts that allow a specified hash profile to be selected by its index number.
+# A list of dicts that allow a specified hash profile
+# to be selected by its index number.
 HASH_TYPES = (MD5, SHA1, SHA224, SHA256, SHA384, SHA512, XXH32, XXH64,)
 # The length of each hash type as hex string:
-HASH_LENGTHS = (32, 40, 56, 64, 96, 128, 8,16,)
+HASH_LENGTHS = (32, 40, 56, 64, 96, 128, 8, 16,)
 # A list of hashing type names for writing to saved settings.
-HASH_STRINGS = ('MD5', 'SHA1', 'SHA224', 'SHA256', 'SHA384', 'SHA512', 'XXH32', 'XXH64',)
+HASH_STRINGS = ('MD5', 'SHA1', 'SHA224', 'SHA256',
+                'SHA384', 'SHA512', 'XXH32', 'XXH64',)
 # HASH_CODES provide a reverse lookup of HASH_STRINGS
-HASH_CODES = {type:HASH_STRINGS.index(type) for type in HASH_STRINGS}
+HASH_CODES = {alg_name: HASH_STRINGS.index(alg_name) for alg_name in HASH_STRINGS}

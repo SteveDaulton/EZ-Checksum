@@ -131,7 +131,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def update_gui(self):
         """Update buttons and menus."""
-
         # Get current states
         has_input = len(self.fileSelectLineEdit.text()) > 0
         has_output = len(self.resultTextBrowser.toPlainText()) > 0
@@ -150,10 +149,14 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.resetButton.setEnabled(can_clear and hash_thread_idle)
         # Enabled when hash_thread_running
         self.cancelButton.setEnabled(hash_thread_running)
-
-        self.hashChoiceButton.setEnabled(
-                hash_thread_idle and not self.has_validator
-                )
+        if self.has_validator:
+            self.statusbar.clearMessage()
+            self.validateLineEdit.setStatusTip('')
+        else:
+            self.hashChoiceButton.setEnabled(hash_thread_idle)
+            self.statusbar.showMessage('No validation text entered.')
+            self.validateLineEdit.setStatusTip(
+                'No validation text entered.')
 
     # Write to Output
     def handle_result(self, name, checksum):
@@ -183,7 +186,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                 with open(output, 'wt', encoding='utf8') as fp:
                     fp.write(f'{checksum} {fname}')
                     self.resultTextBrowser.append(
-                        f'Result written to {output}')
+                        f'Result written to {output}\n')
             except FileNotFoundError:
                 self.resultTextBrowser.append(
                     f'<font color="red">{output} '
@@ -258,21 +261,9 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.update_gui()
 
     def validator_changed(self):
-        """QLineEdit handler for typed validator.
-
-            Update GUI if resetButton state may need changing, if either:
-
-            a. resetButton was enabled and validateLineEdit is now empty,
-            b. resetButton was disabled and validateLineEdit is not now empty.
-        """
-
+        """QLineEdit handler for typed validator."""
         validate.set_validator(self, self.validateLineEdit.text())
-
-        if self.resetButton.isEnabled():
-            if len(self.validateLineEdit.text()) == 0:
-                self.update_gui()
-        elif len(self.validateLineEdit.text()) > 0:
-            self.update_gui()
+        self.update_gui()
 
     def file_browser(self):
         """Qt File browser for single file."""
