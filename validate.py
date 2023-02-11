@@ -36,7 +36,6 @@ def set_validator(parent, text):
         if hash_tuple:
             parent.hashChoiceButton.setCurrentIndex(hash_tuple[0])
             parent.hashChoiceButton.setEnabled(False)
-            #parent.set_hash_algorithm(hash_tuple[0])
             # Ensure that we have a clean hex string
             parent.validateLineEdit.setText(hash_tuple[1])
             parent.has_validator = True

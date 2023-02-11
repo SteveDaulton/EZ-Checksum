@@ -67,4 +67,5 @@ HASH_LENGTHS = (32, 40, 56, 64, 96, 128, 8, 16,)
 HASH_STRINGS = ('MD5', 'SHA1', 'SHA224', 'SHA256',
                 'SHA384', 'SHA512', 'XXH32', 'XXH64',)
 # HASH_CODES provide a reverse lookup of HASH_STRINGS
-HASH_CODES = {alg_name: HASH_STRINGS.index(alg_name) for alg_name in HASH_STRINGS}
+HASH_CODES = {alg_name: HASH_STRINGS.index(alg_name)
+              for alg_name in HASH_STRINGS}

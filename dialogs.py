@@ -13,12 +13,12 @@ def warning(parent, message):
 
 def about(parent, version):
     """About dialog"""
-    message = (r"""<strong>EZ Checksum version {version}</strong><br>
+    message = r"""<strong>EZ Checksum version {version}</strong><br>
 &nbsp;&nbsp;&nbsp;January 2023.<br>
 &nbsp;&nbsp;&nbsp;<i>by Steve Daulton.</i>
 <p>Website: <a href="https://easyspacepro.com">EasySpacePro.com</a><br>
 Released under terms of the
-<a href="https://www.gnu.org/licenses/gpl.html">GPLv3</a>.</p>""")
+<a href="https://www.gnu.org/licenses/gpl.html">GPLv3</a>.</p>"""
     message = message.format(version=version)
     QMessageBox.about(parent, "EZ Checksum", message)
 
