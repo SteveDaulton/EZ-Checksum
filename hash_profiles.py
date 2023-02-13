@@ -13,14 +13,15 @@
 
 """
 
+# from typing import TypeAlias  # Not supported in Python 3.9
+from typing import Union
+
 import hashlib
 import re
 import xxhash
 
-from typing import TypeAlias
 
-
-HashType: TypeAlias = 'str | hashlib._Hash | re.Pattern'
+HashType = Union[str, 'hashlib._Hash', re.Pattern]
 HashProfile = dict[str, HashType]
 
 MD5: HashProfile = {
@@ -66,12 +67,13 @@ XXH64: HashProfile = {
 
 # A list of dicts that allow a specified hash profile
 # to be selected by its index number.
-HASH_TYPES = (MD5, SHA1, SHA224, SHA256, SHA384, SHA512, XXH32, XXH64,)
+HASH_TYPES: tuple[HashProfile, ...] = (MD5, SHA1, SHA224, SHA256,
+                                       SHA384, SHA512, XXH32, XXH64,)
 # The length of each hash type as hex string:
-HASH_LENGTHS = (32, 40, 56, 64, 96, 128, 8, 16,)
+HASH_LENGTHS: tuple[int, ...] = (32, 40, 56, 64, 96, 128, 8, 16,)
 # A list of hashing type names for writing to saved settings.
-HASH_STRINGS = ('MD5', 'SHA1', 'SHA224', 'SHA256',
-                'SHA384', 'SHA512', 'XXH32', 'XXH64',)
+HASH_STRINGS: tuple[str, ...] = ('MD5', 'SHA1', 'SHA224', 'SHA256',
+                                 'SHA384', 'SHA512', 'XXH32', 'XXH64',)
 # HASH_CODES provide a reverse lookup of HASH_STRINGS
 HASH_CODES = {alg_name: HASH_STRINGS.index(alg_name)
               for alg_name in HASH_STRINGS}
