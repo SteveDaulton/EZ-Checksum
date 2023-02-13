@@ -17,42 +17,48 @@ import hashlib
 import re
 import xxhash
 
-MD5 = {
+from typing import TypeAlias
+
+
+HashType: TypeAlias = 'str | hashlib._Hash | re.Pattern'
+HashProfile = dict[str, HashType]
+
+MD5: HashProfile = {
     'name': 'MD5',
     'hasher': hashlib.md5(),
     'regex': re.compile(r'\b[a-f0-9]{32,32}\b', re.I)
     }
-SHA1 = {
+SHA1: HashProfile = {
     'name': 'SHA-1',
     'hasher': hashlib.sha1(),
     'regex': re.compile(r'\b[a-f0-9]{40,40}\b', re.I)
     }
-SHA224 = {
+SHA224: HashProfile = {
     'name': 'SHA-224',
     'hasher': hashlib.sha224(),
     'regex': re.compile(r'\b[a-f0-9]{56.56}\b', re.I)
     }
-SHA256 = {
+SHA256: HashProfile = {
     'name': 'SHA-256',
     'hasher': hashlib.sha256(),
     'regex': re.compile(r'\b[a-f0-9]{64,64}\b', re.I)
     }
-SHA384 = {
+SHA384: HashProfile = {
     'name': 'SHA-384',
     'hasher': hashlib.sha384(),
     'regex': re.compile(r'\b[a-f0-9]{96,96}\b', re.I)
     }
-SHA512 = {
+SHA512: HashProfile = {
     'name': 'SHA-512',
     'hasher': hashlib.sha512(),
     'regex': re.compile(r'\b[a-f0-9]{128,128}\b', re.I)
     }
-XXH32 = {
+XXH32: HashProfile = {
     'name': 'XXH32',
     'hasher': xxhash.xxh32(),
     'regex': re.compile(r'\b[a-f0-9]{8,8}\b', re.I)
     }
-XXH64 = {
+XXH64: HashProfile = {
     'name': 'XXH64',
     'hasher': xxhash.xxh64(),
     'regex': re.compile(r'\b[a-f0-9]{16,16}\b', re.I)
