@@ -25,24 +25,15 @@ VERSION = '0.2.0'
 class ShaApp(QMainWindow, gui.Ui_MainWindow):
     """GUI application for calculating and testing checksums.
 
-    Supported hash algorithms are defined in hash_profiles.
-
-
     Algorithm:
 
-        The default algorithm is SHA-256. May also be overridden
-        if an optional validation string is set.
+        The default algorithm is SHA-256. Supported hash algorithms
+        are defined in hash_profiles.
 
     Validation String:
 
-        An optional test value (hex hash string) may be
-        entered. If provided the algorithm will be detected from the
-        length of the string.
-
-        If the validation string is a URL, the target will be downloaded
-        and searched for supported hash strings. The file will be tested
-        against each hash string found.
-
+        An optional test value (hex hash string). If provided the
+        algorithm will be selected based on the length of the string.
 
     Attributes
     ----------
@@ -53,15 +44,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         hash_thread : QThread
             Worker thread.
         has_validator : bool
-            True when a validation hex checksum exists
+            True when a validation hex checksum with length of a
+            suported hash type exists.
         algorithm : dict
             Hash profile (see: :doc:`hash_profiles`)
         data : QLineEdit
             Data for worker thread. See: :py:mod:`calc.ChecksumThread`.
     """
-
-    checksum = pyqtSignal(str, str)
-    updateProgressBar = pyqtSignal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -119,7 +108,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
         # Now create thread
         self.hash_thread = calc.ChecksumThread(self.algorithm, self.data)
-        self.hash_thread.checksum.connect(self.handle_result)
+        self.hash_thread.checksum_sig.connect(self.handle_result)
         self.hash_thread.updateProgressBar.connect(self.progressBar.setValue)
         self.hash_thread.start()
         self.update_gui()
@@ -131,6 +120,9 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def update_gui(self):
         """Update buttons and menus."""
+        # TODO: Maybe make updating the GUI more granular so
+        # that we only update parts that need updating.
+
         # Get current states
         has_input = len(self.fileSelectLineEdit.text()) > 0
         has_output = len(self.resultTextBrowser.toPlainText()) > 0
@@ -154,13 +146,15 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             self.validateLineEdit.setStatusTip('')
         else:
             self.hashChoiceButton.setEnabled(hash_thread_idle)
+            # Use showMessage to change status bar message immediately,
+            # then set the new status bar message for the LineEdit.
             self.statusbar.showMessage('No validation text entered.')
             self.validateLineEdit.setStatusTip(
                 'No validation text entered.')
 
     # Write to Output
     def handle_result(self, name, checksum):
-        """Handle checksum results."""
+        """Handle results."""
         alg_name = Hp.HASH_TYPES[self.algorithm]['name']
         txt = f'File name: {name}\n{alg_name} checksum: {checksum}\n'
         self.resultTextBrowser.append(txt)

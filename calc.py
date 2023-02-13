@@ -18,7 +18,7 @@ class ChecksumThread(QThread):
     """
 
     updateProgressBar = pyqtSignal(int)
-    checksum = pyqtSignal(str, str)
+    checksum_sig = pyqtSignal(str, str)
 
     def __init__(self, algorithm, data):
         QThread.__init__(self)
@@ -43,9 +43,7 @@ class ChecksumThread(QThread):
 
         # Test for zero byte file
         if size == 0:
-            # self.emit(QtCore.SIGNAL('checksum(QString, QString)'),
-            # fname, 'Error: Empty file.')
-            self.checksum.emit(fname, 'Error: Empty file.')
+            self.checksum_sig.emit(fname, 'Error: Empty file.')
             return  # just bail
 
         # Process in blocks of at least 64k
@@ -68,7 +66,7 @@ class ChecksumThread(QThread):
                         self.updateProgressBar.emit(min(100, percent))
                         percent = int(progress + step)
                 if not self.stop_flag:
-                    self.checksum.emit(fname, str(hasher.hexdigest()))
+                    self.checksum_sig.emit(fname, str(hasher.hexdigest()))
                 else:
                     self.updateProgressBar.emit(0)
 
