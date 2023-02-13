@@ -30,7 +30,6 @@ def set_validator(parent, text):
         ------
             True if valid verifcation string, else False.
     """
-
     if len(text) in Hp.HASH_LENGTHS:
         hash_tuple = hash_from_line(text)
         if hash_tuple:

@@ -55,7 +55,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             Data for worker thread. See: :py:mod:`calc.ChecksumThread`.
     """
 
-    def __init__(self, parent=None) ->None:
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
         self.setupUi(self)
         self.setWindowIcon(QIcon('icon.png'))
@@ -63,7 +63,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.default_open_dir: str = QDir.homePath()
         self.default_save_dir: str = QDir.homePath()
         self.hash_thread: calc.ChecksumThread
-        self.has_validator: bool = False  # True when verification hash is valid.
+        self.has_validator: bool = False
 
         # Settings
         self.algorithm: int = Hp.HASH_CODES['SHA256']
@@ -101,7 +101,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                 )
         self.validateLineEdit.textChanged.connect(self.validator_changed)
 
-    def run_checksum(self) ->None:
+    def run_checksum(self) -> None:
         """Checksum calculation."""
         # Checksum processing in separate thread.
         verify_text: str = self.validateLineEdit.text()
@@ -115,12 +115,12 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.hash_thread.start()
         self.update_gui()
 
-    def closeEvent(self, event) ->None:  # pylint: disable=C0103
+    def closeEvent(self, event) -> None:  # pylint: disable=C0103
         """Override window close requests."""
         event.ignore()
         self.quit()
 
-    def update_gui(self) ->None:
+    def update_gui(self) -> None:
         """Update buttons and menus."""
         # TODO: Maybe make updating the GUI more granular so
         # that we only update parts that need updating.
@@ -155,7 +155,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                 'No validation text entered.')
 
     # Write to Output
-    def handle_result(self, name: str, checksum: str) ->None:
+    def handle_result(self, name: str, checksum: str) -> None:
         """Handle results."""
         alg_name: HashType = Hp.HASH_TYPES[self.algorithm]['name']
         txt = f'File name: {name}\n{alg_name} checksum: {checksum}\n'
@@ -190,7 +190,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                     'is not writeable.</font>')
         self.update_gui()
 
-    def save_result(self) ->None:
+    def save_result(self) -> None:
         """Save results to file"""
         text = self.resultTextBrowser.toPlainText()
 
@@ -201,16 +201,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             return
         dialogs.save_results(self, text)
 
-    def quit(self) ->None:
+    def quit(self) -> None:
         """Shutdown application."""
         prefs.write_settings(self)
         sys.exit()
 
-    def about(self) ->None:
+    def about(self) -> None:
         """Show :py:mod:`'About' <dialogs.about>` dialog"""
         dialogs.about(self, VERSION)
 
-    def file_line_drop_event(self, event) ->None:
+    def file_line_drop_event(self, event) -> None:
         """Handle fileSelectLineEdit drop events"""
         etype = event.mimeData()
         if etype.hasText() and len(etype.text()) > 1:
@@ -230,7 +230,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         else:
             event.ignore()
 
-    def line_validate_drop_event(self, event) ->None:
+    def line_validate_drop_event(self, event) -> None:
         """Handle drop event for validateLineEdit."""
         etype = event.mimeData()
         if etype.hasText() and len(etype.text()) > 1:
@@ -240,7 +240,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         else:
             event.ignore()
 
-    def file_input_text_changed(self) ->None:
+    def file_input_text_changed(self) -> None:
         """QLineEdit handler for typed input.
 
         Sets goButton state: Enabled when file input string is a valid file.
@@ -257,12 +257,12 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             self.goButton.setStatusTip('No file selected.')
         self.update_gui()
 
-    def validator_changed(self) ->None:
+    def validator_changed(self) -> None:
         """QLineEdit handler for typed validator."""
         validate.set_validator(self, self.validateLineEdit.text())
         self.update_gui()
 
-    def file_browser(self) ->None:
+    def file_browser(self) -> None:
         """Qt File browser for single file."""
         fname = QFileDialog.getOpenFileName(
             self, 'Select File', self.default_open_dir)
@@ -270,7 +270,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             self.default_open_dir = os.path.dirname(str(fname[0]))
             self.fileSelectLineEdit.setText(fname[0])
 
-    def set_outpath(self) ->None:
+    def set_outpath(self) -> None:
         """Set the checksum output file path."""
         fname, _ = QFileDialog.getSaveFileName(
             self,
@@ -281,20 +281,20 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.outputLineEdit.setText(fname)
 
     # Button: Stop
-    def stop(self) ->None:
+    def stop(self) -> None:
         """Stop ChecksumThread."""
         self.hash_thread.stop()
         self.hash_thread.wait()
         self.update_gui()
 
     # Choice Button: Algorithm
-    def set_hash_algorithm(self, choice: int) ->None:
+    def set_hash_algorithm(self, choice: int) -> None:
         """hash algorithm setter."""
         self.algorithm = choice
         alg_name = Hp.HASH_TYPES[choice]['name']
         self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}.')
 
-    def reset_or_clear(self) ->None:
+    def reset_or_clear(self) -> None:
         """Reset GUI."""
         self.fileSelectLineEdit.clear()
         self.fileSelectLineEdit.setStatusTip('No file selected.')
@@ -303,7 +303,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.update_gui()
 
 
-def file_drag_enter_event(event) ->None:
+def file_drag_enter_event(event) -> None:
     """Accept drag enter event if hasUrls"""
     if event.mimeData().hasUrls:
         event.setDropAction(Qt.DropAction.CopyAction)
@@ -312,7 +312,7 @@ def file_drag_enter_event(event) ->None:
         event.ignore()
 
 
-def line_validate_enter_event(event) ->None:
+def line_validate_enter_event(event) -> None:
     """Accept drag enter event if text"""
     etype = event.mimeData()
     if etype.hasText() and len(etype.text()) > 1:
@@ -322,7 +322,7 @@ def line_validate_enter_event(event) ->None:
         event.ignore()
 
 
-def main() ->None:
+def main() -> None:
     """Create window"""
     app = QApplication(sys.argv)
     window = ShaApp()

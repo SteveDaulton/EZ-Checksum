@@ -37,7 +37,7 @@ SHA1: HashProfile = {
 SHA224: HashProfile = {
     'name': 'SHA-224',
     'hasher': hashlib.sha224(),
-    'regex': re.compile(r'\b[a-f0-9]{56.56}\b', re.I)
+    'regex': re.compile(r'\b[a-f0-9]{56,56}\b', re.I)
     }
 SHA256: HashProfile = {
     'name': 'SHA-256',
