@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(436, 491)
+        MainWindow.resize(390, 420)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
@@ -26,7 +26,8 @@ class Ui_MainWindow(object):
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
         self.fileSelectLineEdit = QtWidgets.QLineEdit(self.centralwidget)
-        self.fileSelectLineEdit.setToolTip("File may be dropped here")
+        self.fileSelectLineEdit.setToolTip("Drop file here, or click \'Select File\' button, or\n"
+"enter full path to file.")
         self.fileSelectLineEdit.setObjectName("fileSelectLineEdit")
         self.horizontalLayout_5.addWidget(self.fileSelectLineEdit)
         self.fileAddButton = QtWidgets.QPushButton(self.centralwidget)
@@ -109,8 +110,8 @@ class Ui_MainWindow(object):
         spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem1)
         self.hashChoiceButton = QtWidgets.QComboBox(self.centralwidget)
-        self.hashChoiceButton.setToolTip("Hash algorithm is selected automatically\n"
-"if optional \'Validation\' text set")
+        self.hashChoiceButton.setToolTip("Hash algorithm\n"
+"(Selected automatically if optional \'Validation\' text is set)")
         self.hashChoiceButton.setSizeAdjustPolicy(QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContentsOnFirstShow)
         self.hashChoiceButton.setObjectName("hashChoiceButton")
         self.hashChoiceButton.addItem("")
@@ -139,7 +140,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.verticalLayout_results)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 436, 19))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 390, 19))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setObjectName("menuFile")
@@ -188,7 +189,7 @@ class Ui_MainWindow(object):
         self.validateLineEdit.setStatusTip(_translate("MainWindow", "No validation text entered."))
         self.validateLineEdit.setPlaceholderText(_translate("MainWindow", "Validation (Optional)"))
         self.label_8.setText(_translate("MainWindow", "3) Output file."))
-        self.outputLineEdit.setToolTip(_translate("MainWindow", "File that the result will be written to.\n"
+        self.outputLineEdit.setToolTip(_translate("MainWindow", "File that the checksum will be written to.\n"
 "(Right click or \'Ctrl + V\' to paste)"))
         self.outputLineEdit.setStatusTip(_translate("MainWindow", "No output file selected. Output will not be saved."))
         self.outputLineEdit.setPlaceholderText(_translate("MainWindow", "Output file (Optional)"))
@@ -196,13 +197,14 @@ class Ui_MainWindow(object):
         self.outputFileButton.setText(_translate("MainWindow", "Save To"))
         self.label_5.setText(_translate("MainWindow", "4)"))
         self.label_6.setText(_translate("MainWindow", "Click the \'Start\' button."))
-        self.goButton.setToolTip(_translate("MainWindow", "Select file first"))
+        self.goButton.setToolTip(_translate("MainWindow", "Click to start.\n"
+"File to test must be selected first."))
         self.goButton.setStatusTip(_translate("MainWindow", "No file selected."))
         self.goButton.setText(_translate("MainWindow", "Start"))
         self.label_9.setText(_translate("MainWindow", "Test results:"))
         self.resultTextBrowser.setToolTip(_translate("MainWindow", "Output window"))
+        self.progressBar.setToolTip(_translate("MainWindow", "Progress bar"))
         self.progressBar.setStatusTip(_translate("MainWindow", "Not running"))
-        self.hashChoiceButton.setStatusTip(_translate("MainWindow", "Current algorithm: SHA-256"))
         self.hashChoiceButton.setItemText(0, _translate("MainWindow", "MD5"))
         self.hashChoiceButton.setItemText(1, _translate("MainWindow", "SHA-1"))
         self.hashChoiceButton.setItemText(2, _translate("MainWindow", "SHA-224"))
@@ -216,7 +218,7 @@ class Ui_MainWindow(object):
         self.resetButton.setToolTip(_translate("MainWindow", "Reset all"))
         self.resetButton.setText(_translate("MainWindow", "Reset"))
         self.closeButton.setToolTip(_translate("MainWindow", "Quit EZ Checksum"))
-        self.closeButton.setText(_translate("MainWindow", "Close"))
+        self.closeButton.setText(_translate("MainWindow", "Quit"))
         self.menuFile.setTitle(_translate("MainWindow", "&File"))
         self.menuHelp.setTitle(_translate("MainWindow", "&Help"))
         self.actionSelect_File.setText(_translate("MainWindow", "Select File..."))

@@ -21,7 +21,8 @@ import re
 import xxhash
 
 
-HashType = Union[str, 'hashlib._Hash', re.Pattern]
+# Type hints
+HashType = Union[str, 'hashlib._Hash', re.Pattern[str]]
 HashProfile = dict[str, HashType]
 
 MD5: HashProfile = {

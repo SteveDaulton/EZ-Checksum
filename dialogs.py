@@ -56,10 +56,10 @@ def save_results(parent, text):
     dlog.setNameFilter('Text Files (*.txt);;Log Files (*.log);;All Files (*)')
     dlog.setFileMode(QFileDialog.FileMode.AnyFile)
     dlog.setDefaultSuffix('txt')
-    dlog.setDirectory(parent.default_save_dir)
+    dlog.setDirectory(parent.save_dir)
     # Check user didn't cancel
     if dlog.exec() == QDialog.DialogCode.Accepted:
-        parent.default_save_dir = dlog.directory().path()
+        parent.save_dir = dlog.directory().path()
         # Ensure '.log' suffix if Log File filter selected
         # and no filter provided.
         # On Windows / Mac perhaps we should force the file extension?
