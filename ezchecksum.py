@@ -154,19 +154,23 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             self.resultTextBrowser.append(
                 '<b>Warning. The \'Validation\' text is not '
                 'a recognised checksum.</b>')
-        # TODO: Don't allow writing to relative path.
         if len(self.outputLineEdit.text()) > 0:
             output = self.outputLineEdit.text()
             fname = PurePath(name).name  # Name of the processed file
-            try:
-                with open(output, 'wt', encoding='utf8') as fp:
-                    fp.write(f'{checksum} {fname}')
+            if PurePath(output).is_absolute():
+                try:
+                    with open(output, 'wt', encoding='utf8') as fp:
+                        fp.write(f'{checksum} {fname}')
+                        self.resultTextBrowser.append(
+                            f'Result written to {output}\n')
+                except FileNotFoundError:
                     self.resultTextBrowser.append(
-                        f'Result written to {output}\n')
-            except FileNotFoundError:
+                        f'<font color="red">{output} '
+                        'is not writeable.</font>')
+            else:
                 self.resultTextBrowser.append(
-                    f'<font color="red">{output} '
-                    'is not writeable.</font>')
+                            f'Could not write to {output}\n'
+                            'Output path is not fully qualified.\n')
         self.update_gui()
 
     def save_result(self) -> None:
