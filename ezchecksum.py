@@ -110,24 +110,29 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                                                self.fileSelectLineEdit)
         self.hash_thread.checksum_sig.connect(self.handle_result)
         self.hash_thread.updateProgressBar.connect(self.progressBar.setValue)
+        # TODO: Update progressBar status tip.
         self.hash_thread.start()
         self.update_gui()
 
     def update_gui(self) -> None:
-        """Update buttons and menus."""
+        """Update buttons and menus when calculations
+        starts or stops, and on Reset."""
         # Get current states
         try:
             hash_thread_running: bool = self.hash_thread.isRunning()
         except AttributeError:  # hash_thread may not have been created yet.
             hash_thread_running = False
         hash_thread_idle: bool = not hash_thread_running
-
+        # Disable QLineEdit's when calculation in progress.
         self.fileSelectLineEdit.setEnabled(hash_thread_idle)
         self.validateLineEdit.setEnabled(hash_thread_idle)
-
-        # Enabled when hash_thread_running
+        self.outputLineEdit.setEnabled(hash_thread_idle)
+        # Enabled buttons when hash_thread_running
         self.cancelButton.setEnabled(hash_thread_running)
-        # Disabled when hash_thread_running
+        # Disabled buttons when hash_thread_running
+        self.fileAddButton.setEnabled(hash_thread_idle)
+        self.outputFileButton.setEnabled(hash_thread_idle)
+        self.goButton.setEnabled(hash_thread_idle)
         self.hashChoiceButton.setEnabled(hash_thread_idle)
         self.set_reset_state()
 
@@ -168,6 +173,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                 self.resultTextBrowser.append(
                             f'Could not write to {output}\n'
                             'Output path is not fully qualified.\n')
+        # Update UI on completion.
         self.update_gui()
 
     def save_result(self) -> None:
@@ -322,11 +328,11 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def reset_or_clear(self) -> None:
         """Reset GUI."""
         self.fileSelectLineEdit.clear()
-        #self.fileSelectLineEdit.setStatusTip('No file selected.')
         self.validateLineEdit.clear()
         self.outputLineEdit.clear()
         self.resultTextBrowser.clear()
         self.update_gui()
+        self.statusbar.showMessage('Reset', 2000)
 
 
 def file_drag_enter_event(event) -> None:
