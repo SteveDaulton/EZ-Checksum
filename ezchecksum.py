@@ -173,13 +173,12 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def save_result(self) -> None:
         """Save results to file"""
         text = self.resultTextBrowser.toPlainText()
-
-        if not text:
+        if text:
+            dialogs.save_results(self, text)
+        else:
             dialogs.critical(
                 self,
                 'No results to print.\nCalculate checksum first.')
-            return
-        dialogs.save_results(self, text)
 
     def quit(self) -> None:
         """Shutdown application."""
@@ -290,16 +289,17 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.outputLineEdit.setText(fname)
 
     def set_reset_state(self) -> None:
-        """Enable Reset button when there's something to reset."""
+        """Enable Reset button when there's something to reset and
+        calculation QThread is not running."""
         try:
             hash_thread_running: bool = self.hash_thread.isRunning()
         except AttributeError:  # hash_thread may not have been created yet.
             hash_thread_running = False
         hash_thread_idle: bool = not hash_thread_running
-        can_reset = ((self.fileSelectLineEdit.text() != '' or
-                      self.validateLineEdit.text() != '' or
-                      self.outputLineEdit.text() != '') and
-                     hash_thread_idle)
+        can_reset: bool = ((self.fileSelectLineEdit.text() != '' or
+                            self.validateLineEdit.text() != '' or
+                            self.outputLineEdit.text() != '') and
+                           hash_thread_idle)
         self.resetButton.setEnabled(can_reset)
 
     # Button: Stop
