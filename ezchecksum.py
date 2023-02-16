@@ -6,7 +6,7 @@
 import os
 import sys
 
-from pathlib import PurePath
+from pathlib import PurePath, Path
 
 from PyQt6.QtCore import QDir, Qt
 from PyQt6.QtWidgets import QMainWindow, QApplication, QFileDialog
@@ -97,9 +97,11 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
         # LineEdit actions
         self.fileSelectLineEdit.textChanged.connect(
-                self.file_input_text_changed)
+                self.file_select_changed)
         self.validateLineEdit.textChanged.connect(
                 self.validator_changed)
+        self.outputLineEdit.textChanged.connect(
+                self.output_line_changed)
 
     def run_checksum(self) -> None:
         """Checksum calculation."""
@@ -223,11 +225,15 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         else:
             event.ignore()
 
-    def file_input_text_changed(self) -> None:
-        """QLineEdit handler for changed input."""
-        # Set resetButton state.
+    def file_select_changed(self) -> None:
+        """QLineEdit handler for changed fileSelectLineEdit."""
+        # TODO: Set resetButton state.
         has_text: bool = len(self.fileSelectLineEdit.text()) > 0
         self.resetButton.setEnabled(has_text)
+        # Resolve home path shortcut.
+        file_select: Path = Path(self.fileSelectLineEdit.text()).expanduser()
+        if file_select != Path(self.fileSelectLineEdit.text()):
+            self.fileSelectLineEdit.setText(str(file_select))
         # Set goButton state
         is_valid_file = os.path.isfile(self.fileSelectLineEdit.text())
         self.goButton.setEnabled(is_valid_file)
@@ -242,7 +248,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.fileSelectLineEdit.setStatusTip(msg)
 
     def validator_changed(self) -> None:
-        """QLineEdit handler for changed validator."""
+        """QLineEdit handler for changed validateLineEdit."""
         validate.set_validator(self, self.validateLineEdit.text())
         self.hashChoiceButton.setEnabled(not self.has_validator)
         if self.has_validator:
@@ -256,6 +262,21 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             msg = 'Invalid checksum.'
         self.statusbar.showMessage(msg)
         self.validateLineEdit.setStatusTip(msg)
+
+    def output_line_changed(self) -> None:
+        """QLineEdit handler for changed outputLineEdit.
+        Note: The directory must exist."""
+        # TODO: Set resetButton state.
+        has_text: bool = len(self.outputLineEdit.text()) > 0
+        is_valid = False
+        out_file: Path = Path(self.outputLineEdit.text()).expanduser()
+        # Resolve home path shortcut.
+        if out_file != Path(self.outputLineEdit.text()):
+            self.outputLineEdit.setText(str(out_file))
+        out_dir: Path = Path(PurePath(out_file).parent)
+        if out_dir.is_dir() and not out_file.is_dir():
+            is_valid = True
+        # TODO: set status tip.
 
     def file_browser(self) -> None:
         """Qt File browser for single file."""
