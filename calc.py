@@ -1,6 +1,7 @@
 """Main class for calculating checksums"""
 
 from PyQt6.QtCore import QThread, QFileInfo, pyqtSignal
+from PyQt6.QtWidgets import QLineEdit
 
 import hash_profiles as Hp
 
@@ -20,7 +21,7 @@ class ChecksumThread(QThread):
     updateProgressBar = pyqtSignal(int)
     checksum_sig = pyqtSignal(str, str)
 
-    def __init__(self, algorithm, data):
+    def __init__(self, algorithm: int, data: QLineEdit) -> None:
         QThread.__init__(self)
         self.algorithm = algorithm
         self.data = data
@@ -29,9 +30,11 @@ class ChecksumThread(QThread):
         self.file_list_item = None
 
     # Override the destructor:
-    def __del__(self):
+    def __del__(self) -> None:
         self.wait()
 
+    # Type Hints not used here as they are more trouble than
+    # they're worth with python 3.9
     def get_hash(self, fname):
         """Calculate the checksum."""
         profile = Hp.HASH_TYPES[self.algorithm]
@@ -73,10 +76,10 @@ class ChecksumThread(QThread):
         except (IOError, ValueError):
             dialogs.warning(self, 'An I/O error or a ValueError occurred')
 
-    def run(self):
+    def run(self) -> None:
         """Override of QThread run."""
         self.get_hash(self.data.text())
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop thread gracefully."""
         self.stop_flag = True

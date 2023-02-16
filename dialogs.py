@@ -5,13 +5,12 @@ from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtWidgets import QDialog
 
 
-def warning(parent, message):
+def warning(parent, message) -> None:
     """A simple warning message, Returns True on OK."""
-    return (QMessageBox.warning(parent, "Warning", message) ==
-            QMessageBox.StandardButton.Ok)
+    QMessageBox.warning(parent, "Warning", message)
 
 
-def about(parent, version):
+def about(parent, version) -> None:
     """About dialog"""
     message = r"""<strong>EZ Checksum version {version}</strong><br>
 &nbsp;&nbsp;&nbsp;January 2023.<br>
@@ -23,12 +22,8 @@ Released under terms of the
     QMessageBox.about(parent, "EZ Checksum", message)
 
 
-def critical(parent, message):
-    """A simple error message, Returns True on OK."""
-    return QMessageBox.critical(parent, "Error", message) == QMessageBox.Ok
-
-
-def dialog(message, title='Warning', more='', details='', choice=False):
+def dialog(message, title='Warning', more='',
+           details='', choice=False) -> bool:
     """A simple message box.
     Returns True if Ok / Yes, otherwise False.
     """
@@ -49,7 +44,7 @@ def dialog(message, title='Warning', more='', details='', choice=False):
     return msg_box.exec() == QMessageBox.StandardButton.Ok
 
 
-def save_results(parent, text):
+def save_results(parent, text) -> None:
     """Save results to file dialog"""
     dlog = QFileDialog()
     dlog.setAcceptMode(QFileDialog.AcceptMode.AcceptSave)

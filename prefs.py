@@ -7,7 +7,7 @@ from PyQt6.QtCore import QSettings
 import hash_profiles as Hp
 
 
-def read_settings(self):
+def read_settings(self) -> None:
     """Restore from last used (or default) settings"""
     self.settings = QSettings('AudioNyq', 'EZ Checksum')
 
@@ -39,7 +39,7 @@ def read_settings(self):
         self.save_dir = save_dir
 
 
-def write_settings(self):
+def write_settings(self) -> None:
     """Write last used settings as human readable strings"""
     geometry = self.saveGeometry()
     self.settings.setValue('Geometry', geometry)

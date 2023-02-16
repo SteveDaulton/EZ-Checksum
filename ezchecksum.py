@@ -9,7 +9,8 @@ import sys
 from pathlib import PurePath, Path
 
 from PyQt6.QtCore import QDir, Qt
-from PyQt6.QtWidgets import QMainWindow, QApplication, QFileDialog
+from PyQt6.QtWidgets import (QMainWindow, QApplication, QFileDialog,
+                             QMessageBox)
 from PyQt6.QtGui import QIcon
 
 import gui
@@ -19,7 +20,7 @@ import dialogs
 import calc
 import validate
 
-VERSION = '0.2.0'
+VERSION = '0.3.0'
 
 # Type hints:
 HashType = Hp.HashType
@@ -55,7 +56,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             Data for worker thread. See: :py:mod:`calc.ChecksumThread`.
     """
 
-    def __init__(self, parent=None) -> None:
+    def __init__(self, parent: None = None) -> None:
         super().__init__(parent)
         self.setupUi(self)
         self.setWindowIcon(QIcon('icon.png'))
@@ -185,9 +186,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         if text:
             dialogs.save_results(self, text)
         else:
-            dialogs.critical(
-                self,
-                'No results to print.\nCalculate checksum first.')
+            msg: str = 'No results to print.\nCalculate checksum first.'
+            QMessageBox.critical(self, "Error", msg)
 
     def quit(self) -> None:
         """Shutdown application."""
