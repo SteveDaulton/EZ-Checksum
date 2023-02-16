@@ -116,10 +116,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def update_gui(self) -> None:
         """Update buttons and menus."""
         # Get current states
-        has_input: bool = len(self.fileSelectLineEdit.text()) > 0
-        has_output: bool = len(self.resultTextBrowser.toPlainText()) > 0
-        has_verify: bool = len(self.validateLineEdit.text()) > 0
-
         try:
             hash_thread_running: bool = self.hash_thread.isRunning()
         except AttributeError:  # hash_thread may not have been created yet.
@@ -128,13 +124,12 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
         self.fileSelectLineEdit.setEnabled(hash_thread_idle)
         self.validateLineEdit.setEnabled(hash_thread_idle)
-        # Enabled when hash_thread_idle and something to clear.
-        can_clear: bool = has_input or has_output or has_verify
-        self.resetButton.setEnabled(can_clear and hash_thread_idle)
+
         # Enabled when hash_thread_running
         self.cancelButton.setEnabled(hash_thread_running)
         # Disabled when hash_thread_running
         self.hashChoiceButton.setEnabled(hash_thread_idle)
+        self.set_reset_state()
 
     def handle_result(self, name: str, checksum: str) -> None:
         """Handle results and output."""
@@ -227,9 +222,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def file_select_changed(self) -> None:
         """QLineEdit handler for changed fileSelectLineEdit."""
-        # TODO: Set resetButton state.
         has_text: bool = len(self.fileSelectLineEdit.text()) > 0
-        self.resetButton.setEnabled(has_text)
+        self.set_reset_state()
         # Resolve home path shortcut.
         file_select: Path = Path(self.fileSelectLineEdit.text()).expanduser()
         if file_select != Path(self.fileSelectLineEdit.text()):
@@ -249,6 +243,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def validator_changed(self) -> None:
         """QLineEdit handler for changed validateLineEdit."""
+        self.set_reset_state()
         validate.set_validator(self, self.validateLineEdit.text())
         self.hashChoiceButton.setEnabled(not self.has_validator)
         if self.has_validator:
@@ -266,9 +261,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def output_line_changed(self) -> None:
         """QLineEdit handler for changed outputLineEdit.
         Note: The directory must exist."""
-        # TODO: Set resetButton state.
-        has_text: bool = len(self.outputLineEdit.text()) > 0
-        is_valid = False
+        self.set_reset_state()
         out_file: Path = Path(self.outputLineEdit.text()).expanduser()
         # Resolve home path shortcut.
         if out_file != Path(self.outputLineEdit.text()):
@@ -295,6 +288,19 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             ('Checksum Files (*.md5 *.sha1 *.sha224 *.sha256 *.384 '
              '*.sha512 *.sha);;Text Files (*.txt);;All Files (*)'))
         self.outputLineEdit.setText(fname)
+
+    def set_reset_state(self) -> None:
+        """Enable Reset button when there's something to reset."""
+        try:
+            hash_thread_running: bool = self.hash_thread.isRunning()
+        except AttributeError:  # hash_thread may not have been created yet.
+            hash_thread_running = False
+        hash_thread_idle: bool = not hash_thread_running
+        can_reset = ((self.fileSelectLineEdit.text() != '' or
+                      self.validateLineEdit.text() != '' or
+                      self.outputLineEdit.text() != '') and
+                     hash_thread_idle)
+        self.resetButton.setEnabled(can_reset)
 
     # Button: Stop
     def stop(self) -> None:
