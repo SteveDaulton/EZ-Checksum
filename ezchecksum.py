@@ -110,7 +110,6 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                                                self.fileSelectLineEdit)
         self.hash_thread.checksum_sig.connect(self.handle_result)
         self.hash_thread.updateProgressBar.connect(self.progressBar.setValue)
-        # TODO: Update progressBar status tip.
         self.hash_thread.start()
         self.update_gui()
 
@@ -134,6 +133,10 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.outputFileButton.setEnabled(hash_thread_idle)
         self.goButton.setEnabled(hash_thread_idle)
         self.hashChoiceButton.setEnabled(hash_thread_idle)
+        if hash_thread_running:
+            self.progressBar.setStatusTip('Calculating Checksum...')
+        else:
+            self.progressBar.setStatusTip('Not running')
         self.set_reset_state()
 
     def handle_result(self, name: str, checksum: str) -> None:
