@@ -267,8 +267,11 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             self.outputLineEdit.setText(str(out_file))
         out_dir: Path = Path(PurePath(out_file).parent)
         if out_dir.is_dir() and not out_file.is_dir():
-            is_valid = True
-        # TODO: set status tip.
+            msg = f'Write checksum to {out_file}.'
+        else:
+            msg = 'No output file selected. Output will not be saved.'
+        self.statusbar.showMessage(msg)
+        self.outputLineEdit.setStatusTip(msg)
 
     def file_browser(self) -> None:
         """Qt File browser for single file."""
@@ -319,8 +322,9 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def reset_or_clear(self) -> None:
         """Reset GUI."""
         self.fileSelectLineEdit.clear()
-        self.fileSelectLineEdit.setStatusTip('No file selected.')
+        #self.fileSelectLineEdit.setStatusTip('No file selected.')
         self.validateLineEdit.clear()
+        self.outputLineEdit.clear()
         self.resultTextBrowser.clear()
         self.update_gui()
 
