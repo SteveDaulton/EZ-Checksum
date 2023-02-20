@@ -143,13 +143,14 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def handle_result(self, name: str, checksum: str) -> None:
         """Handle results and output."""
         alg_name: HashType = Hp.HASH_TYPES[self.algorithm]['name']
-        txt = f'File name: {name}\n{alg_name} checksum: {checksum}\n'
+        txt = (f'<font color="black">File name: {name}\n'
+               f'{alg_name} checksum: {checksum}</font>\n')
         self.resultTextBrowser.append(txt)
 
         if self.has_validator:
             if checksum == self.validateLineEdit.text():
                 self.resultTextBrowser.append(
-                    '<font color="#009900"><b>Success. '
+                    '<font color="green"><b>Success. '
                     'Checksum matches the expected value.'
                     '</b></font>')
             else:
@@ -158,8 +159,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                     'match expected value. </b></font>')
         elif len(self.validateLineEdit.text()) > 0:
             self.resultTextBrowser.append(
-                '<b>Warning. The \'Validation\' text is not '
-                'a recognised checksum.</b>')
+                '<font color="red"><b>Warning. The \'Validation\' text '
+                'is not a recognised checksum.</b></font>')
         if len(self.outputLineEdit.text()) > 0:
             output = self.outputLineEdit.text()
             fname = PurePath(name).name  # Name of the processed file
@@ -168,15 +169,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                     with open(output, 'wt', encoding='utf8') as fp:
                         fp.write(f'{checksum} {fname}')
                         self.resultTextBrowser.append(
-                            f'Result written to {output}\n')
+                            f'<font color="black">Result written to '
+                            f'{output}</font>\n')
                 except FileNotFoundError:
                     self.resultTextBrowser.append(
                         f'<font color="red">{output} '
                         'is not writeable.</font>')
             else:
                 self.resultTextBrowser.append(
-                            f'Could not write to {output}\n'
-                            'Output path is not fully qualified.\n')
+                            f'<font color="red">Could not write to {output}\n'
+                            'Output path is not fully qualified.</font>\n')
         # Update UI on completion.
         self.update_gui()
 
@@ -308,10 +310,11 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         except AttributeError:  # hash_thread may not have been created yet.
             hash_thread_running = False
         hash_thread_idle: bool = not hash_thread_running
-        can_reset: bool = ((self.fileSelectLineEdit.text() != '' or
+        can_reset: bool = (hash_thread_idle and
+                           (self.fileSelectLineEdit.text() != '' or
                             self.validateLineEdit.text() != '' or
-                            self.outputLineEdit.text() != '') and
-                           hash_thread_idle)
+                            self.outputLineEdit.text() != '' or
+                            self.progressBar.value() != 0))
         self.resetButton.setEnabled(can_reset)
 
     # Button: Stop
@@ -334,6 +337,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.validateLineEdit.clear()
         self.outputLineEdit.clear()
         self.resultTextBrowser.clear()
+        self.progressBar.setValue(0)
         self.update_gui()
         self.statusbar.showMessage('Reset', 2000)
 
