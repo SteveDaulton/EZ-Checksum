@@ -63,13 +63,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.save_dir: str = QDir.homePath()
         self.hash_thread: calc.ChecksumThread
         self.has_validator: bool = False
-        self.algorithm: int = Hp.HASH_CODES['SHA-256']
+        self.alg_id: int = Hp.HASH_CODES['SHA-256']
         self.resultTextBrowser.setStyleSheet("background-color: white;")
 
         # Update settings from saved config
         prefs.read_settings(self)
         # Must be set after reading prefs.
-        self.hashChoiceButton.setCurrentIndex(self.algorithm)
+        self.hashChoiceButton.setCurrentIndex(self.alg_id)
 
         # Drag and drop methods
         self.fileSelectLineEdit.dragEnterEvent = file_drag_enter_event
@@ -105,7 +105,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def run_checksum(self) -> None:
         """Checksum calculation."""
         # Create checksum processing QThread.
-        self.hash_thread = calc.ChecksumThread(self.algorithm,
+        self.hash_thread = calc.ChecksumThread(self.alg_id,
                                                self.fileSelectLineEdit)
         self.hash_thread.checksum_sig.connect(self.handle_result)
         self.hash_thread.updateProgressBar.connect(self.progressBar.setValue)
@@ -140,7 +140,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def handle_result(self, name: str, checksum: str) -> None:
         """Handle results and output."""
-        alg_name: str = Hp.HASH_TYPES[self.algorithm]['name']
+        alg_name: str = Hp.HASH_TYPES[self.alg_id]['name']
         txt = (f'<font color="black">File name: {name}\n'
                f'{alg_name} checksum: {checksum}</font>\n')
         self.resultTextBrowser.append(txt)
@@ -325,7 +325,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     # Choice Button: Algorithm
     def set_hash_algorithm(self, choice: int) -> None:
         """hash algorithm setter."""
-        self.algorithm = choice
+        self.alg_id = choice
         alg_name = Hp.HASH_TYPES[choice]['name']
         self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}.')
 
