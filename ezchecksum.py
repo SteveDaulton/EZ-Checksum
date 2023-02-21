@@ -64,6 +64,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.hash_thread: calc.ChecksumThread
         self.has_validator: bool = False
         self.alg_id: int = Hp.HASH_CODES['SHA-256']
+
+        # Widget properties
         self.resultTextBrowser.setStyleSheet("background-color: white;")
         hexreg = QRegularExpression(r'[0-9a-fA-F]*')
         self.validateLineEdit.setValidator(QRegularExpressionValidator(hexreg))
@@ -133,11 +135,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.fileAddButton.setEnabled(hash_thread_idle)
         self.outputFileButton.setEnabled(hash_thread_idle)
         self.goButton.setEnabled(hash_thread_idle)
-        self.hashChoiceButton.setEnabled(hash_thread_idle)
         if hash_thread_running:
             self.progressBar.setStatusTip('Calculating Checksum...')
+            self.hashChoiceButton.setEnabled(False)
         else:
             self.progressBar.setStatusTip('Not running')
+            # hashChoiceButton remains disabled when validator supplied.
+            self.hashChoiceButton.setEnabled(not self.has_validator)
         self.set_reset_state()
 
     def handle_result(self, name: str, checksum: str) -> None:
