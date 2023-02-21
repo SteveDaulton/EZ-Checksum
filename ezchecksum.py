@@ -163,8 +163,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
                     'match expected value. </b></font>')
         elif len(self.validateLineEdit.text()) > 0:
             self.resultTextBrowser.append(
-                '<font color="red"><b>Warning. The \'Validation\' text '
-                'is not a recognised checksum.</b></font>')
+                '<font color="orange"><b>Warning</b>. The \'Validation\' '
+                'text is not a recognised checksum.</font>')
         if len(self.outputLineEdit.text()) > 0:
             output = self.outputLineEdit.text()
             fname = PurePath(name).name  # Name of the processed file
