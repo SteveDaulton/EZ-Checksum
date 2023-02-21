@@ -16,7 +16,6 @@ def hash_from_line(line: str) -> 'tuple[int, str] | None':
             Tuple in the form: (algorithm index, hash)
     """
     index = 0
-    # Match = NewType('Match', 're.Match[str]')
     match: Optional[re.Match[str]] = None
     for profile in Hp.HASH_TYPES:
         match = profile['regex'].search(line)
