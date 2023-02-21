@@ -140,7 +140,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def handle_result(self, name: str, checksum: str) -> None:
         """Handle results and output."""
-        alg_name: str = Hp.HASH_TYPES[self.alg_id]['name']
+        alg_name: str = Hp.HASH_STRINGS[self.alg_id]
         txt = (f'<font color="black">File name: {name}\n'
                f'{alg_name} checksum: {checksum}</font>\n')
         self.resultTextBrowser.append(txt)
@@ -326,7 +326,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def set_hash_algorithm(self, choice: int) -> None:
         """hash algorithm setter."""
         self.alg_id = choice
-        alg_name = Hp.HASH_TYPES[choice]['name']
+        alg_name = Hp.HASH_STRINGS[choice]
         self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}.')
 
     def reset_or_clear(self) -> None:

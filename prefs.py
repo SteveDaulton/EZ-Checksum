@@ -19,12 +19,12 @@ def read_settings(self) -> None:
 
     # The 'algorithm' parameter carries the HASH_TYPE index number.
     # This makes it easier to retrieve the profile as:
-    # Hp.HASH_TYPES[self.algorithm: int]
-    # Default hash encoding is Sha 256.
-    algorithm: str = self.settings.value('Algorithm', 'SHA256')
+    # Hp.HASH_TYPES[self.alg_id: int]
+    # Default hash encoding is SHA-256.
+    algorithm: str = self.settings.value('Algorithm', 'SHA-256')
     try:
         algorithm_index: int = Hp.HASH_CODES[str(algorithm)]
-        self.algorithm = algorithm_index
+        self.alg_id = algorithm_index
     except KeyError:
         pass  # Use default.
 
@@ -43,10 +43,7 @@ def write_settings(self) -> None:
     """Write last used settings as human readable strings"""
     geometry = self.saveGeometry()
     self.settings.setValue('Geometry', geometry)
-
-    # self.algorithm is the HASH_TYPE index number.
-    self.settings.setValue('Algorithm', Hp.HASH_STRINGS[self.algorithm])
-
+    self.settings.setValue('Algorithm', Hp.HASH_STRINGS[self.alg_id])
     self.settings.setValue('OpenDirectory', self.open_dir)
     self.settings.setValue('SaveDirectory', self.save_dir)
     self.settings.sync()

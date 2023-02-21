@@ -23,7 +23,7 @@ class ChecksumThread(QThread):
 
     def __init__(self, algorithm: int, data: QLineEdit) -> None:
         QThread.__init__(self)
-        self.algorithm = algorithm
+        self.alg_id = algorithm
         self.data = data
         # Set stop_flag to True when we want to stop processing.
         self.stop_flag = False
@@ -37,7 +37,7 @@ class ChecksumThread(QThread):
     # they're worth with python 3.9
     def get_hash(self, fname):
         """Calculate the checksum."""
-        profile = Hp.HASH_TYPES[self.algorithm]
+        profile = Hp.HASH_TYPES[self.alg_id]
         # Create a new copy of the hasher so that it will go out of
         # scope and be deleted when the function ends.
         hasher = profile['hasher'].copy()
