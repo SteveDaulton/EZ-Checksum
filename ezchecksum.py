@@ -22,9 +22,6 @@ import validate
 
 VERSION = '0.3.0'
 
-# Type hints:
-HashType = Hp.HashType
-
 
 class ShaApp(QMainWindow, gui.Ui_MainWindow):
     """GUI application for calculating and testing checksums.
@@ -66,7 +63,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.save_dir: str = QDir.homePath()
         self.hash_thread: calc.ChecksumThread
         self.has_validator: bool = False
-        self.algorithm: int = Hp.HASH_CODES['SHA256']
+        self.algorithm: int = Hp.HASH_CODES['SHA-256']
         self.resultTextBrowser.setStyleSheet("background-color: white;")
 
         # Update settings from saved config
@@ -143,7 +140,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def handle_result(self, name: str, checksum: str) -> None:
         """Handle results and output."""
-        alg_name: HashType = Hp.HASH_TYPES[self.algorithm]['name']
+        alg_name: str = Hp.HASH_TYPES[self.algorithm]['name']
         txt = (f'<font color="black">File name: {name}\n'
                f'{alg_name} checksum: {checksum}</font>\n')
         self.resultTextBrowser.append(txt)
