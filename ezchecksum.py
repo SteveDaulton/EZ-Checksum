@@ -67,6 +67,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.hash_thread: calc.ChecksumThread
         self.has_validator: bool = False
         self.algorithm: int = Hp.HASH_CODES['SHA256']
+        self.resultTextBrowser.setStyleSheet("background-color: white;")
 
         # Update settings from saved config
         prefs.read_settings(self)
