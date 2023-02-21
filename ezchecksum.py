@@ -8,10 +8,10 @@ import sys
 
 from pathlib import PurePath, Path
 
-from PyQt6.QtCore import QDir, Qt
+from PyQt6.QtCore import QDir, Qt, QRegularExpression
 from PyQt6.QtWidgets import (QMainWindow, QApplication, QFileDialog,
                              QMessageBox)
-from PyQt6.QtGui import QIcon
+from PyQt6.QtGui import QIcon, QRegularExpressionValidator
 
 import gui
 import hash_profiles as Hp
@@ -65,6 +65,8 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.has_validator: bool = False
         self.alg_id: int = Hp.HASH_CODES['SHA-256']
         self.resultTextBrowser.setStyleSheet("background-color: white;")
+        hexreg = QRegularExpression(r'[0-9a-fA-F]*')
+        self.validateLineEdit.setValidator(QRegularExpressionValidator(hexreg))
 
         # Update settings from saved config
         prefs.read_settings(self)
@@ -146,7 +148,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.resultTextBrowser.append(txt)
 
         if self.has_validator:
-            if checksum == self.validateLineEdit.text():
+            if checksum == self.validateLineEdit.text().lower():
                 self.resultTextBrowser.append(
                     '<font color="green"><b>Success. '
                     'Checksum matches the expected value.'
