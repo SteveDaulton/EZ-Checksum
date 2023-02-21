@@ -2,6 +2,7 @@
 
 """Validate module contains functions handling validation / verification."""
 
+from typing import Optional
 import re
 import hash_profiles as Hp
 
@@ -15,11 +16,10 @@ def hash_from_line(line: str) -> 'tuple[int, str] | None':
             Tuple in the form: (algorithm index, hash)
     """
     index = 0
-    match: 're.Match[str] | None' = None
+    # Match = NewType('Match', 're.Match[str]')
+    match: Optional[re.Match[str]] = None
     for profile in Hp.HASH_TYPES:
-        # Keeping MyPy happy.
-        if isinstance(profile['regex'], re.Pattern):
-            match = profile['regex'].search(line)
+        match = profile['regex'].search(line)
         if match:
             return (index, match.group())
         index += 1
