@@ -3,6 +3,8 @@ Introduction
 
 **EZ-Checksum** is a graphical application for calculating and/or verifying *fingerprints* for files to allow easy verification of the file's authenticity and integrity.
 
+**Please be aware that this app is not yet release ready.**
+
 EZ-Checksum was developed on Linux, primarily for use on Linux, though it will probably work on other platforms.
 
 Examples
@@ -15,7 +17,7 @@ Typical uses include:
 
 Interface
 ---------
-The interface is designed to be as simple as possible, providing a means to generate a checksum for a single file, and to verify the checksum against a known value.
+The easy to use graphical interface provides a means to generate a checksum for a single file, and (optionally) to verify the checksum against a known value.
 
 Common usability features such as drag and drop, tool tips and keyboard shortcuts are provided, along with a comprehensive user manual.
 
