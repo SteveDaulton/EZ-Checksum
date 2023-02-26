@@ -248,12 +248,16 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         # Set StatusTips
         if is_valid_file:
             msg = 'File selected.'
+            go_button_msg = 'Click to start.'
         elif has_text:
             msg = 'File not found.'
+            go_button_msg = 'No file selected.'
         else:
             msg = "No file selected."
+            go_button_msg = 'No file selected.'
         self.statusbar.showMessage(msg)
         self.fileSelectLineEdit.setStatusTip(msg)
+        self.goButton.setStatusTip(go_button_msg)
 
     def validator_changed(self) -> None:
         """QLineEdit handler for changed validateLineEdit."""
