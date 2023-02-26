@@ -28,7 +28,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     Algorithm:
 
-        The default algorithm is SHA-256. Supported hash algorithms
+        The default algorithm is SHA256. Supported hash algorithms
         are defined in hash_profiles.
 
     Validation String:
@@ -63,12 +63,14 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.save_dir: str = QDir.homePath()
         self.hash_thread: calc.ChecksumThread
         self.has_validator: bool = False
-        self.alg_id: int = Hp.HASH_CODES['SHA-256']
+        self.alg_id: int = Hp.HASH_CODES['SHA256']
 
         # Widget properties
         self.resultTextBrowser.setStyleSheet("background-color: white;")
         hexreg = QRegularExpression(r'[0-9a-fA-F]*')
         self.validateLineEdit.setValidator(QRegularExpressionValidator(hexreg))
+        self.hashChoiceButton.setStatusTip(
+                f'Current algorithm: {Hp.HASH_NAMES[self.alg_id]}.')
 
         # Update settings from saved config
         prefs.read_settings(self)
@@ -146,7 +148,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
 
     def handle_result(self, name: str, checksum: str) -> None:
         """Handle results and output."""
-        alg_name: str = Hp.HASH_STRINGS[self.alg_id]
+        alg_name: str = Hp.HASH_NAMES[self.alg_id]
         txt = (f'<font color="black">File name: {name}\n'
                f'{alg_name} checksum: {checksum}</font>\n')
         self.resultTextBrowser.append(txt)
@@ -268,7 +270,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             hash_from_line: 'tuple[int, str] | None' = (
                 validate.hash_from_line(self.validateLineEdit.text()))
             if hash_from_line:  # MyPy doesn't know this must be True.
-                msg = f'Auto-selected {Hp.HASH_STRINGS[hash_from_line[0]]}'
+                msg = f'Auto-selected {Hp.HASH_NAMES[hash_from_line[0]]}'
         elif len(self.validateLineEdit.text()) == 0:
             msg = 'No validation text entered.'
         else:
@@ -336,7 +338,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def set_hash_algorithm(self, choice: int) -> None:
         """hash algorithm setter."""
         self.alg_id = choice
-        alg_name = Hp.HASH_STRINGS[choice]
+        alg_name = Hp.HASH_NAMES[choice]
         self.hashChoiceButton.setStatusTip(f'Current algorithm: {alg_name}.')
 
     def reset_or_clear(self) -> None:

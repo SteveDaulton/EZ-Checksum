@@ -40,7 +40,7 @@ class ChecksumThread(QThread):
         profile = Hp.HASH_TYPES[self.alg_id]
         # Create a new copy of the hasher so that it will go out of
         # scope and be deleted when the function ends.
-        hasher = profile['hasher'].copy()
+        hasher = profile.hasher.copy()
         info = QFileInfo(fname)
         size = info.size()
 

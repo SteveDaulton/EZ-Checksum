@@ -18,7 +18,7 @@ def hash_from_line(line: str) -> 'tuple[int, str] | None':
     index = 0
     match: Optional[re.Match[str]] = None
     for profile in Hp.HASH_TYPES:
-        match = profile['regex'].search(line)
+        match = profile.regex.search(line)
         if match:
             return (index, match.group())
         index += 1
