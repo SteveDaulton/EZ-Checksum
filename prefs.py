@@ -23,8 +23,7 @@ def read_settings(self) -> None:
     # Default hash encoding is SHA-256.
     algorithm: str = self.settings.value('Algorithm', 'SHA-256')
     try:
-        algorithm_index: int = Hp.HASH_CODES[str(algorithm)]
-        self.alg_id = algorithm_index
+        self.alg_id = Hp.HASH_CODES[str(algorithm)]
     except KeyError:
         pass  # Use default.
 
