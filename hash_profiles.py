@@ -15,6 +15,7 @@
 
 from typing import NamedTuple
 
+import sys
 import hashlib
 import re
 import xxhash
@@ -60,7 +61,14 @@ def get_hash(idx: int) -> HashProfile:
 
 def get_hash_name(idx):
     """Return name of hash at HASH_TYPES[index]"""
-    return HASH_TYPES[idx].name
+    try:
+        return HASH_TYPES[idx].name
+    except IndexError:
+        msg = f'Error: "{idx}" out of range in get_hash_name().'
+        sys.exit(msg)
+    except TypeError:
+        msg = f'Error: get_hash_name() requires an int. Got {type(idx)}'
+        sys.exit(msg)
 
 
 def is_valid_hash_length(val: int) -> bool:
@@ -70,4 +78,8 @@ def is_valid_hash_length(val: int) -> bool:
 
 def get_hash_index(name: str) -> int:
     """Return index of HashProfile.name in HASH_TYPES."""
-    return _HASH_NAMES.index(name)
+    try:
+        return _HASH_NAMES.index(name)
+    except ValueError:
+        msg = f'Error: "{name}" is not a valid hash name'
+        sys.exit(msg)

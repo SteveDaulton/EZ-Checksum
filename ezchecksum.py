@@ -9,8 +9,7 @@ import sys
 from pathlib import PurePath, Path
 
 from PyQt6.QtCore import QDir, Qt, QRegularExpression
-from PyQt6.QtWidgets import (QMainWindow, QApplication, QFileDialog,
-                             QMessageBox)
+from PyQt6.QtWidgets import (QMainWindow, QApplication, QFileDialog)
 from PyQt6.QtGui import QIcon, QRegularExpressionValidator
 
 import gui
@@ -195,7 +194,7 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
             dialogs.save_results(self, text)
         else:
             msg: str = 'No results to print.\nCalculate checksum first.'
-            QMessageBox.critical(self, "Error", msg)
+            dialogs.critical(self, msg)
 
     def quit(self) -> None:
         """Shutdown application."""

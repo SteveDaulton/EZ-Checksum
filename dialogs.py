@@ -5,6 +5,11 @@ from PyQt6.QtWidgets import QFileDialog
 from PyQt6.QtWidgets import QDialog
 
 
+def critical(parent, message) -> None:
+    """Critical error message"""
+    QMessageBox.critical(parent, "Error", message)
+
+
 def warning(parent, message) -> None:
     """A simple warning message, Returns True on OK."""
     QMessageBox.warning(parent, "Warning", message)
