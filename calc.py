@@ -8,8 +8,6 @@ import hash_profiles as Hp
 import dialogs
 
 
-
-
 class ChecksumThread(QThread):
     """Worker thread to calculate checksums.
 
