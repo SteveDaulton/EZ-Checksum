@@ -47,10 +47,27 @@ HASH_TYPES: tuple[HashProfile, ...] = (MD5, SHA1, SHA224, SHA256,
                                        SHA384, SHA512, XXH32, XXH64,)
 
 
-# Helper constants for easy look-ups in hash profiles.
-HASH_NAMES: tuple[str, ...] = tuple(alg.name for alg in HASH_TYPES)
-HASH_LENGTHS: tuple[int, ...] = tuple(alg.length for alg in HASH_TYPES)
+_HASH_NAMES: tuple[str, ...] = tuple(alg.name for alg in HASH_TYPES)
+_HASH_LENGTHS: tuple[int, ...] = tuple(alg.length for alg in HASH_TYPES)
 
-# Reverse lookup of HASH_NAMES by index,
-HASH_CODES: dict[str, int] = {
-        hash_name: idx for idx, hash_name in enumerate(HASH_NAMES)}
+
+# Getter functions.
+
+def get_hash(idx: int) -> HashProfile:
+    """Return HashProfile at HASH_TYPES[index]"""
+    return HASH_TYPES[idx]
+
+
+def get_hash_name(idx):
+    """Return name of hash at HASH_TYPES[index]"""
+    return HASH_TYPES[idx].name
+
+
+def is_valid_hash_length(val: int) -> bool:
+    """Return True if val is a valid checksum length."""
+    return val in _HASH_LENGTHS
+
+
+def get_hash_index(name: str) -> int:
+    """Return index of HashProfile.name in HASH_TYPES."""
+    return _HASH_NAMES.index(name)

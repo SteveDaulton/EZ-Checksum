@@ -13,7 +13,7 @@ def hash_from_line(line: str) -> 'tuple[int, str] | None':
     Return
     ------
         tuple or None
-            Tuple in the form: (algorithm index, hash)
+            Tuple in the form: (index, hash)
     """
     index = 0
     match: Optional[re.Match[str]] = None
@@ -30,7 +30,7 @@ def set_validator(parent, text: str) -> None:
     parent.has_validator: bool
     """
     parent.has_validator = False
-    if len(text) in Hp.HASH_LENGTHS:
+    if Hp.is_valid_hash_length(len(text)):
         hash_tuple: 'tuple[int, str] | None' = hash_from_line(text)
         if hash_tuple:
             parent.hashChoiceButton.setCurrentIndex(hash_tuple[0])

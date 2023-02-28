@@ -8,6 +8,8 @@ import hash_profiles as Hp
 import dialogs
 
 
+
+
 class ChecksumThread(QThread):
     """Worker thread to calculate checksums.
 
@@ -21,9 +23,9 @@ class ChecksumThread(QThread):
     updateProgressBar = pyqtSignal(int)
     checksum_sig = pyqtSignal(str, str)
 
-    def __init__(self, algorithm: int, data: QLineEdit) -> None:
+    def __init__(self, alg_id: int, data: QLineEdit) -> None:
         QThread.__init__(self)
-        self.alg_id = algorithm
+        self.alg_id = alg_id
         self.data = data
         # Set stop_flag to True when we want to stop processing.
         self.stop_flag = False
@@ -33,11 +35,9 @@ class ChecksumThread(QThread):
     def __del__(self) -> None:
         self.wait()
 
-    # Type Hints not used here as they are more trouble than
-    # they're worth with python 3.9
-    def get_hash(self, fname):
+    def get_hash(self, fname: str) -> None:
         """Calculate the checksum."""
-        profile = Hp.HASH_TYPES[self.alg_id]
+        profile: Hp.HashProfile = Hp.get_hash(self.alg_id)
         # Create a new copy of the hasher so that it will go out of
         # scope and be deleted when the function ends.
         hasher = profile.hasher.copy()
