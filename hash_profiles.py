@@ -83,3 +83,12 @@ def get_hash_index(name: str) -> int:
     except ValueError:
         msg = f'Error: "{name}" is not a valid hash name'
         sys.exit(msg)
+
+
+def hash_idx_from_length(length: int) -> int:
+    """Return hash index of HashProfile with specified hash length"""
+    try:
+        return _HASH_LENGTHS.index(length)
+    except ValueError:
+        sys.exit('Error in hash_idx_from_length: '
+                 f'\"{length}\" not in _HASH_LENGTHS')

@@ -60,9 +60,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         # Default settings
         self.open_dir: str = QDir.homePath()
         self.save_dir: str = QDir.homePath()
-        self.hash_thread: calc.ChecksumThread
         self.has_validator: bool = False
         self.alg_id: int = Hp.get_hash_index('SHA256')
+
+        # Other attributes
+        self.hash_thread: calc.ChecksumThread
+        # dict {files-to process: expected-checksums, ...}
+        self.jobs: dict[str, str] = {}
 
         # Widget properties
         self.resultTextBrowser.setStyleSheet("background-color: white;")
@@ -120,13 +124,13 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
     def update_gui(self) -> None:
         """Update buttons and menus when calculations
         starts or stops, and on Reset."""
-        # Get current states
+        # Get current hash_thread state.
         try:
             hash_thread_running: bool = self.hash_thread.isRunning()
         except AttributeError:  # hash_thread may not have been created yet.
             hash_thread_running = False
         hash_thread_idle: bool = not hash_thread_running
-        # Disable QLineEdit's when calculation in progress.
+        # Disable QLineEdit's when hash_thread_running
         self.fileSelectLineEdit.setEnabled(hash_thread_idle)
         self.validateLineEdit.setEnabled(hash_thread_idle)
         self.outputLineEdit.setEnabled(hash_thread_idle)
@@ -244,11 +248,15 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         if file_select != Path(self.fileSelectLineEdit.text()):
             self.fileSelectLineEdit.setText(str(file_select))
         # Set goButton state
-        is_valid_file = os.path.isfile(self.fileSelectLineEdit.text())
+        is_valid_file = validate.file_exists(self.fileSelectLineEdit.text())
         self.goButton.setEnabled(is_valid_file)
         # Set StatusTips
         if is_valid_file:
-            msg = 'File selected.'
+            # TODO: Process checksum text file.
+            if self.is_checksum_file(file_select):
+                msg = 'Checksum file selected'
+            else:
+                msg = 'File selected.'
             go_button_msg = 'Click to start.'
         elif has_text:
             msg = 'File not found.'
@@ -259,6 +267,42 @@ class ShaApp(QMainWindow, gui.Ui_MainWindow):
         self.statusbar.showMessage(msg)
         self.fileSelectLineEdit.setStatusTip(msg)
         self.goButton.setStatusTip(go_button_msg)
+
+    def is_checksum_file(self, fname) -> bool:
+        """Try to parse selected file as a list of checksums and file names.
+        Return True if lines in the format:
+            '<checksum> <filename>'
+        Else return False.
+        """
+        _maxlines: int = 20  # Maximum number of files in checksum file
+        line_num = 1
+        has_valid_line = False
+        # self.jobs{} holds the list of files and expected checksums.
+        try:
+            with open(fname, 'rt', encoding='utf8') as fp:
+                for line in fp:
+                    if self.line_parser(line):
+                        checksum_txt = line.split()
+                        has_valid_line = True
+                        self.resultTextBrowser.append(checksum_txt[1])
+                    line_num += 1
+                    if line_num > _maxlines:
+                        break
+        except UnicodeDecodeError:
+            pass
+        return has_valid_line
+
+    def line_parser(self, line: str) -> bool:
+        """Return True if line contains a a valid checksum and a
+        reference to a file that exists."""
+        _data = line.split()
+        if len(_data) != 2:
+            return False
+        if validate.is_valid_hash(_data[0]):
+            _path: PurePath = PurePath(self.fileSelectLineEdit.text())
+            _path = _path.parent
+            return validate.file_exists(_data[1], _path)
+        return False
 
     def validator_changed(self) -> None:
         """QLineEdit handler for changed validateLineEdit."""
@@ -368,6 +412,10 @@ def line_validate_enter_event(event) -> None:
         event.accept()
     else:
         event.ignore()
+
+
+def TODO():
+    pass
 
 
 def main() -> None:

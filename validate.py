@@ -2,12 +2,14 @@
 
 """Validate module contains functions handling validation / verification."""
 
+import os
 from typing import Optional
 import re
 import hash_profiles as Hp
 
 
 def hash_from_line(line: str) -> 'tuple[int, str] | None':
+    # TODO: We only really need the index.
     """Extract hash string from line of text.
 
     Return
@@ -15,14 +17,9 @@ def hash_from_line(line: str) -> 'tuple[int, str] | None':
         tuple or None
             Tuple in the form: (index, hash)
     """
-    index = 0
-    match: Optional[re.Match[str]] = None
-    for profile in Hp.HASH_TYPES:
-        match = profile.regex.search(line)
-        if match:
-            return (index, match.group())
-        index += 1
-    return None
+    _idx = Hp.hash_idx_from_length(len(line))
+    if is_valid_hash(line):
+        return (_idx, line)
 
 
 def set_validator(parent, text: str) -> None:
@@ -37,3 +34,19 @@ def set_validator(parent, text: str) -> None:
             # Ensure that we have a clean hex string
             parent.validateLineEdit.setText(hash_tuple[1])
             parent.has_validator = True
+
+
+def is_valid_hash(chksum: str) -> bool:
+    """Return True if chksum could be a valid checksum."""
+    if Hp.is_valid_hash_length(len(chksum)):
+        _idx = Hp.hash_idx_from_length(len(chksum))
+        _match = Hp.HASH_TYPES[_idx].regex.search(chksum)
+        return bool(_match)
+    return False
+
+
+def file_exists(fname: str, path: Optional[str] = None) -> bool:
+    """Return True if file found, else False."""
+    if path:
+        fname = os.path.join(path, fname)
+    return os.path.isfile(fname)
